@@ -7,7 +7,6 @@
 (require 'json)
 (require 'cl-lib)
 (require 'helm)
-(require 'storax-icons)
 
 (defvar url-http-end-of-headers nil)
 (defvar org-tfl-api-id "f9af66c5")
@@ -307,11 +306,26 @@ USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transp
    (org-tfl-jp-make-url)
    'org-tfl-jp-handle))
 
+(defvar org-tlf-from-history nil)
+(defvar org-tlf-to-history nil)
+(defvar org-tlf-via-history nil)
+
+(defun org-tfl-jp (from to via datetime)
+  "Plan journey FROM TO VIA at DATETIME."
+  (interactive
+   (list (read-from-minibuffer "From: " nil nil nil 'org-tfl-from-history)
+	 (read-from-minibuffer "To: " nil nil nil 'org-tfl-to-history)
+	 (read-from-minibuffer "Via: " nil nil nil 'org-tfl-via-history)
+	 (org-read-date t t)))
+  (let ((date (format-time-string "%Y%m%d" datetime))
+	(time (format-time-string "%H%M" datetime)))
+    (org-tfl-jp-retrieve from to :via (if (equal "" via) nil via) :date date :time time)))
+
 
 ;; Example calls
 ;; (org-tfl-jp-retrieve "lonlat:\"-0.13500003041,51.50990587838\"" "lonlat:\"-0.29547881328,51.57205666482\"")
-
 ;; (org-tfl-jp-retrieve "Piccadilly Circus" "Preston Road")
+;; (org-tfl-jp)
 
 (provide 'org-tfl)
 ;;; org-tfl ends here
