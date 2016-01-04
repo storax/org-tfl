@@ -49,12 +49,30 @@
   (display-buffer (current-buffer))
     result)
 
+(defun org-tfl-jp-get-disambiguations (result)
+  "Set the disambiguation options from RESULT."
+  (setq org-tfl-jp-fromdis nil)
+  (setq org-tfl-jp-todis nil)
+  (setq org-tfl-jp-viadis nil)
+  (setq org-tfl-jp-fromdis
+	(or (cdr (assoc 'disambiguationOptions (assoc 'fromLocationDisambiguation result)))
+	    (eq (cdr (assoc 'matchStatus (assoc 'fromLocationDisambiguation result)))
+		"identified")))
+  (setq org-tfl-jp-todis
+	(or (cdr (assoc 'disambiguationOptions (assoc 'toLocationDisambiguation result)))
+	    (eq (cdr (assoc 'matchStatus (assoc 'toLocationDisambiguation result)))
+		"identified")))
+  (setq org-tfl-jp-viadis
+	(or (cdr (assoc 'disambiguationOptions (assoc 'viaLocationDisambiguation result)))
+	    (eq (cdr (assoc 'matchStatus (assoc 'viaLocationDisambiguation result)))
+		"identified"))))
+
 (defun org-tfl-jp-disambiguation-handler (result)
   "Resolve disambiguation of RESULT and try again."
-  (let ((disambiguations (org-tfl-jp-get-disambiguations result)))
-    (setq org-tfl-jp-fromdis (nth 0 disambiguations))
-    (setq org-tfl-jp-todis (nth 1 disambiguations))
-    (setq org-tfl-jp-viadis (nth 2 disambiguations)))
+  (org-tfl-jp-get-disambiguations result)
+  (if (and org-tfl-jp-fromdis org-tfl-jp-todis)
+      t
+    (message "No stations found. Try different ones."))
   (display-buffer (current-buffer))
     result)
 
