@@ -63,11 +63,19 @@
 							"train.svg")))
 (defconst org-tfl-icon-walking (org-tfl-create-icon (concat (file-name-directory load-file-name)
 							"walking.svg")))
-(defconst org-tfl-icon-walking (org-tfl-create-icon (concat (file-name-directory load-file-name)
+(defconst org-tfl-icon-dlr (org-tfl-create-icon (concat (file-name-directory load-file-name)
 							"dlr.svg")))
+(defconst org-tfl-icon-coach (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							  "coach.svg")))
+(defconst org-tfl-icon-river-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							      "river-bus.svg")))
+
+
 
 (defvar org-tfl-mode-icons
   (list
+   (cons "coach" org-tfl-icon-coach)
+   (cons "river-bus" org-tfl-icon-river-bus)
    (cons "dlr" org-tfl-icon-dlr)
    (cons "bus" org-tfl-icon-bus)
    (cons "tube" org-tfl-icon-tube)
