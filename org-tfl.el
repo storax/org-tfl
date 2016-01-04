@@ -43,10 +43,29 @@
 (defvar org-tfl-jp-todis nil)
 (defvar org-tfl-jp-viadis nil)
 
+(cl-defun org-tfl-create-icon (path &optional (asc 80) (text "  "))
+  "Return string with icon at PATH displayed with ascent ASC and TEXT."
+  (propertize text 'display
+	      (create-image
+	       (with-temp-buffer
+		 (insert-file-contents path) (buffer-string))
+	       nil t :ascent asc :mask 'heuristic)))
+
+(defconst org-tfl-icon-cam (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							"cam.svg")))
+(defconst org-tfl-icon-location (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							"location.svg")))
+(defconst org-tfl-icon-tube (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							"tube.svg")))
+;(defconst storax/icon-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
+;							"bus.svg")))
+(defconst org-tfl-icon-train (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							"train.svg")))
+
 (defvar org-tfl-mode-icons
   (list
-   (cons "tube" storax/icon-tfl-tube)
-   (cons "train" storax/icon-tfl-train)))
+   (cons "tube" org-tfl-icon-tube)
+   (cons "train" org-tfl-icon-train)))
 
 (defun org-tfl-jp-itinerary-handler (result)
   "Show itinerary RESULT."
@@ -78,15 +97,19 @@
 	 (modes (cdr (assoc 'modes place)))
 	 (commonName (cdr (assoc 'commonName place))))
     (cond ((equal type "StopPoint")
-	   (concat (mapconcat
-		    #'(lambda (mode) (or (cdr (assoc mode org-tfl-mode-icons)) mode))
-		    modes " ")
-		   " "
-		   commonName))
+	   (if modes
+	       (concat (mapconcat
+			#'(lambda (mode) (or (cdr (assoc mode org-tfl-mode-icons)) mode))
+			modes " ")
+		       " "
+		       commonName)
+	     commonName)
 	  ((equal type "PointOfInterest")
-	   (format "%s %s" storax/icon-cam commonName))
-	  (t
-	   "%s: %s" type commonName)))
+	   (format "%s %s" org-tfl-icon-cam commonName))
+	  ((equal type "Address")
+	   (format "%s %s" org-tfl-icon-location commonName))
+	  ('t
+	   (format "%s: %s" type commonName)))))
   )
 
 (defun org-tfl-jp-transform-disambiguations (candidates)
