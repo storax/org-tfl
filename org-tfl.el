@@ -67,26 +67,51 @@
 	    (eq (cdr (assoc 'matchStatus (assoc 'viaLocationDisambiguation result)))
 		"identified"))))
 
+(defun org-tfl-jp-transform-disambiguations (candidates)
+  "Transform disambiguation options CANDIDATES."
+  (mapcar (lambda (cand) (cons (format "%s" (cdr (assoc 'commonName (assoc 'place cand))))
+			       (format "%s,%s"
+				 (cdr (assoc 'lat (assoc 'place cand)))
+				 (cdr (assoc 'lon (assoc 'place cand))))))
+	  candidates)
+  )
+
+(defun org-tfl-jp-resolve-helm (cands var)
+  "Let the user select CANDS to set VAR.
+
+Afterwards 'org-tfl-jp-resolve-disambiguation' will be called."
+  (helm
+   :sources `(((name . ,(format "Choose location for %s." cands))
+	       (candidates . ,(org-tfl-jp-transform-disambiguations (eval cands)))
+	       (action . (lambda (option)
+			   (setq ,cands nil)
+			   (setq ,var option)
+			   (org-tfl-jp-resolve-disambiguation)))))))
+
 (defun org-tfl-jp-resolve-disambiguation ()
   "Let the user choose from the disambiguation options.
 
 If there are no options retrieve itinerary."
   (cond ((vectorp org-tfl-jp-fromdis)
-	 t)
+	 (org-tfl-jp-resolve-helm 'org-tfl-jp-fromdis
+				  'org-tfl-jp-arg-from))
 	((vectorp org-tfl-jp-todis)
-	 t)
+	 (org-tfl-jp-resolve-helm 'org-tfl-jp-todis
+				  'org-tfl-jp-arg-to))
 	((vectorp org-tfl-jp-viadis)
-	 t))
-  (url-retrieve
-   (org-tfl-jp-make-url)
-   'org-tfl-jp-handle))
+	 (org-tfl-jp-resolve-helm 'org-tfl-jp-viadis
+				  'org-tfl-jp-arg-via))
+	(t
+	 (url-retrieve
+	  (org-tfl-jp-make-url)
+	  'org-tfl-jp-handle))))
 
 (defun org-tfl-jp-disambiguation-handler (result)
   "Resolve disambiguation of RESULT and try again."
   (org-tfl-jp-get-disambiguations result)
   (if (and org-tfl-jp-fromdis org-tfl-jp-todis)
       (org-tfl-jp-resolve-disambiguation)
-    (message "No stations found. Try different ones.")))
+    (display-buffer (current-buffer))))
 
 (defvar org-tfl-jp-handlers
   `(("Tfl.Api.Presentation.Entities.JourneyPlanner.ItineraryResult, Tfl.Api.Presentation.Entities"
@@ -98,7 +123,7 @@ If there are no options retrieve itinerary."
   "Create journey planner url.
 
 For keys see 'org-tfl-jp-retrieve'."
-  (concat org-tfl-api-base-url
+  (replace-regexp-in-string "&+$" "" (concat org-tfl-api-base-url
 	  (format org-tfl-api-jp org-tfl-jp-arg-from org-tfl-jp-arg-to)
 	  "?"
 	  (if (and org-tfl-api-jp org-tfl-api-key)
@@ -134,8 +159,7 @@ For keys see 'org-tfl-jp-retrieve'."
 	  (if org-tfl-jp-arg-applyHtmlMarkup
 	      (format "applyHtmlMarkup=%s&" org-tfl-jp-arg-applyHtmlMarkup) "")
 	  (if org-tfl-jp-arg-useMultiModalCall
-	      (format "useMultiModalCall=%s&" org-tfl-jp-arg-useMultiModalCall) "")
-))
+	      (format "useMultiModalCall=%s&" org-tfl-jp-arg-useMultiModalCall) ""))))
 
 (defun org-tfl-jp-handle-error (data response)
   "Handle errors with DATA and RESPONSE."
