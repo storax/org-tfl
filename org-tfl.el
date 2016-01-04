@@ -67,14 +67,26 @@
 	    (eq (cdr (assoc 'matchStatus (assoc 'viaLocationDisambiguation result)))
 		"identified"))))
 
+(defun org-tfl-jp-resolve-disambiguation ()
+  "Let the user choose from the disambiguation options.
+
+If there are no options retrieve itinerary."
+  (cond ((vectorp org-tfl-jp-fromdis)
+	 t)
+	((vectorp org-tfl-jp-todis)
+	 t)
+	((vectorp org-tfl-jp-viadis)
+	 t))
+  (url-retrieve
+   (org-tfl-jp-make-url)
+   'org-tfl-jp-handle))
+
 (defun org-tfl-jp-disambiguation-handler (result)
   "Resolve disambiguation of RESULT and try again."
   (org-tfl-jp-get-disambiguations result)
   (if (and org-tfl-jp-fromdis org-tfl-jp-todis)
-      t
-    (message "No stations found. Try different ones."))
-  (display-buffer (current-buffer))
-    result)
+      (org-tfl-jp-resolve-disambiguation)
+    (message "No stations found. Try different ones.")))
 
 (defvar org-tfl-jp-handlers
   `(("Tfl.Api.Presentation.Entities.JourneyPlanner.ItineraryResult, Tfl.Api.Presentation.Entities"
@@ -145,7 +157,7 @@ ARGS are ignored."
 	 (org-tfl-jp-handle-redirect (cdr status) (buffer-substring (point) (point-max))))
 	(t
 	 (let* ((result (json-read))
-		(type (alist-get '$type result))
+		(type (cdr (assoc '$type result)))
 		(handler (cdr (assoc type org-tfl-jp-handlers))))
 	   (funcall handler result)))))
 
