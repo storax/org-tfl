@@ -6,6 +6,7 @@
 (require 'url)
 (require 'json)
 (require 'cl-lib)
+(require 'helm)
 (require 'storax-icons)
 
 (defvar url-http-end-of-headers nil)
@@ -57,14 +58,19 @@
 							"location.svg")))
 (defconst org-tfl-icon-tube (org-tfl-create-icon (concat (file-name-directory load-file-name)
 							"tube.svg")))
-;(defconst storax/icon-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
-;							"bus.svg")))
+(defconst org-tfl-icon-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							"bus.svg")))
 (defconst org-tfl-icon-train (org-tfl-create-icon (concat (file-name-directory load-file-name)
 							"train.svg")))
+(defconst org-tfl-icon-walking (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							"walking.svg")))
+
 
 (defvar org-tfl-mode-icons
   (list
+   (cons "bus" org-tfl-icon-bus)
    (cons "tube" org-tfl-icon-tube)
+   (cons "walking" org-tfl-icon-walking)
    (cons "train" org-tfl-icon-train)))
 
 (defun org-tfl-jp-itinerary-handler (result)
@@ -103,14 +109,13 @@
 			modes " ")
 		       " "
 		       commonName)
-	     commonName)
+	     commonName))
 	  ((equal type "PointOfInterest")
 	   (format "%s %s" org-tfl-icon-cam commonName))
 	  ((equal type "Address")
 	   (format "%s %s" org-tfl-icon-location commonName))
 	  ('t
 	   (format "%s: %s" type commonName)))))
-  )
 
 (defun org-tfl-jp-transform-disambiguations (candidates)
   "Transform disambiguation options CANDIDATES."
@@ -307,7 +312,6 @@ USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transp
 ;; (org-tfl-jp-retrieve "lonlat:\"-0.13500003041,51.50990587838\"" "lonlat:\"-0.29547881328,51.57205666482\"")
 
 ;; (org-tfl-jp-retrieve "Piccadilly Circus" "Preston Road")
-
 
 (provide 'org-tfl)
 ;;; org-tfl ends here
