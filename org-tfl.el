@@ -76,12 +76,13 @@
 	  candidates)
   )
 
-(defun org-tfl-jp-resolve-helm (cands var)
+(defun org-tfl-jp-resolve-helm (cands var name)
   "Let the user select CANDS to set VAR.
 
+NAME for the helm section.
 Afterwards 'org-tfl-jp-resolve-disambiguation' will be called."
   (helm
-   :sources `(((name . ,(format "Choose location for %s." cands))
+   :sources `(((name . ,name)
 	       (candidates . ,(org-tfl-jp-transform-disambiguations (eval cands)))
 	       (action . (lambda (option)
 			   (setq ,cands nil)
@@ -94,13 +95,16 @@ Afterwards 'org-tfl-jp-resolve-disambiguation' will be called."
 If there are no options retrieve itinerary."
   (cond ((vectorp org-tfl-jp-fromdis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-fromdis
-				  'org-tfl-jp-arg-from))
+				  'org-tfl-jp-arg-from
+				  (format "Select FROM location for %s." org-tfl-jp-arg-from)))
 	((vectorp org-tfl-jp-todis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-todis
-				  'org-tfl-jp-arg-to))
+				  'org-tfl-jp-arg-to
+				  (format "Select TO location for %s." org-tfl-jp-arg-to)))
 	((vectorp org-tfl-jp-viadis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-viadis
-				  'org-tfl-jp-arg-via))
+				  'org-tfl-jp-arg-via
+				  (format "Select VIA location for %s." org-tfl-jp-arg-via)))
 	(t
 	 (url-retrieve
 	  (org-tfl-jp-make-url)
@@ -111,7 +115,9 @@ If there are no options retrieve itinerary."
   (org-tfl-jp-get-disambiguations result)
   (if (and org-tfl-jp-fromdis org-tfl-jp-todis)
       (org-tfl-jp-resolve-disambiguation)
-    (display-buffer (current-buffer))))
+    (if org-tfl-jp-fromdis
+	(message "Cannot resolve To Location: %s" org-tfl-jp-arg-to)
+      (message "Cannot resolve From Location: %s" org-tfl-jp-arg-from))))
 
 (defvar org-tfl-jp-handlers
   `(("Tfl.Api.Presentation.Entities.JourneyPlanner.ItineraryResult, Tfl.Api.Presentation.Entities"
