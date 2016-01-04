@@ -6,7 +6,7 @@
 (require 'url)
 (require 'json)
 (require 'cl-lib)
-
+(require 'storax-icons)
 
 (defvar url-http-end-of-headers nil)
 (defvar org-tfl-api-id "f9af66c5")
@@ -43,6 +43,10 @@
 (defvar org-tfl-jp-todis nil)
 (defvar org-tfl-jp-viadis nil)
 
+(defvar org-tfl-mode-icons
+  (list
+   (cons "tube" storax/icon-tfl-tube)
+   (cons "train" storax/icon-tfl-train)))
 
 (defun org-tfl-jp-itinerary-handler (result)
   "Show itinerary RESULT."
@@ -67,9 +71,27 @@
 	    (eq (cdr (assoc 'matchStatus (assoc 'viaLocationDisambiguation result)))
 		"identified"))))
 
+(defun org-tfl-jp-pp-disambiguation (candidate)
+  "Nice formatting for CANDIDATE."
+  (let* ((place (assoc 'place candidate))
+	 (type (eval (cdr (assoc 'placeType place))))
+	 (modes (cdr (assoc 'modes place)))
+	 (commonName (cdr (assoc 'commonName place))))
+    (cond ((equal type "StopPoint")
+	   (concat (mapconcat
+		    #'(lambda (mode) (or (cdr (assoc mode org-tfl-mode-icons)) mode))
+		    modes " ")
+		   " "
+		   commonName))
+	  ((equal type "PointOfInterest")
+	   (format "%s %s" storax/icon-cam commonName))
+	  (t
+	   "%s: %s" type commonName)))
+  )
+
 (defun org-tfl-jp-transform-disambiguations (candidates)
   "Transform disambiguation options CANDIDATES."
-  (mapcar (lambda (cand) (cons (format "%s" (cdr (assoc 'commonName (assoc 'place cand))))
+  (mapcar (lambda (cand) (cons (org-tfl-jp-pp-disambiguation cand)
 			       (format "%s,%s"
 				 (cdr (assoc 'lat (assoc 'place cand)))
 				 (cdr (assoc 'lon (assoc 'place cand))))))
