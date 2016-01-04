@@ -14,6 +14,31 @@
 (defvar org-tfl-api-base-url "https://api.tfl.gov.uk/")
 (defvar org-tfl-api-jp "Journey/JourneyResults/%s/to/%s")
 
+;; JP context
+(defvar org-tfl-jp-arg-from nil)
+(defvar org-tfl-jp-arg-to nil)
+(defvar org-tfl-jp-arg-via nil)
+(defvar org-tfl-jp-arg-nationalSearch nil)
+(defvar org-tfl-jp-arg-date nil)
+(defvar org-tfl-jp-arg-time nil)
+(defvar org-tfl-jp-arg-timeIs "Departing")
+(defvar org-tfl-jp-arg-journeyPreference "leasttime")
+(defvar org-tfl-jp-arg-mode nil)
+(defvar org-tfl-jp-arg-accessibilityPreference nil)
+(defvar org-tfl-jp-arg-fromName nil)
+(defvar org-tfl-jp-arg-toName nil)
+(defvar org-tfl-jp-arg-viaName nil)
+(defvar org-tfl-jp-arg-maxTransferMinutes nil)
+(defvar org-tfl-jp-arg-maxWalkingMinutes nil)
+(defvar org-tfl-jp-arg-walkingSpeed "average")
+(defvar org-tfl-jp-arg-cyclePreference nil)
+(defvar org-tfl-jp-arg-adjustment nil)
+(defvar org-tfl-jp-arg-bikeProficiency nil)
+(defvar org-tfl-jp-arg-alternativeCycle nil)
+(defvar org-tfl-jp-arg-alternativeWalking t)
+(defvar org-tfl-jp-arg-applyHtmlMarkup nil)
+(defvar org-tfl-jp-arg-useMultiModalCall nil)
+
 (defun org-tfl-jp-itinerary-handler (result)
   (display-buffer (current-buffer))
     result)
@@ -28,44 +53,47 @@
     ("Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationResult, Tfl.Api.Presentation.Entities"
      . org-tfl-jp-disambiguation-handler)))
 
-(cl-defun org-tfl-jp-make-url
-    (from to &key
-	  (via nil) (nationalSearch nil) (date nil) (time nil) (timeIs "Departing")
-	  (journeyPreference "leasttime") (mode nil) (accessibilityPreference nil)
-	  (fromName nil) (toName nil) (viaName nil) (maxTransferMinutes nil)
-	  (maxWalkingMinutes nil) (walkingSpeed "average") (cyclePreference nil)
-	  (adjustment nil) (bikeProficiency nil) (alternativeCycle nil)
-	  (alternativeWalking t) (applyHtmlMarkup nil) (useMultiModalCall nil))
-  "Create journey planner url FROM TO.
+(defun org-tfl-jp-make-url ()
+  "Create journey planner url.
 
 For keys see 'org-tfl-jp-retrieve'."
   (concat org-tfl-api-base-url
-	  (format org-tfl-api-jp from to)
+	  (format org-tfl-api-jp org-tfl-jp-arg-from org-tfl-jp-arg-to)
 	  "?"
 	  (if (and org-tfl-api-jp org-tfl-api-key)
 	      (format "app_id=%s&app_key=%s&" (or org-tfl-api-id "") (or org-tfl-api-key ""))
 	    "")
-	  (if via (format "via=%s&" via) "")
-	  (if nationalSearch (format "nationalSearch=%s&" nationalSearch) "")
-	  (if date (format "date=%s&" date) "")
-	  (if time (format "time=%s&" time) "")
-	  (format "timeIs=%s&" timeIs)
-	  (format "journeyPreference=%s&" journeyPreference)
-	  (if mode (format "mode=%s&" mode) "")
-	  (if accessibilityPreference (format "accessibilityPreference=%s&" accessibilityPreference) "")
-	  (if fromName (format "fromName=%s&" fromName) "")
-	  (if toName (format "toName=%s&" toName) "")
-	  (if viaName (format "viaName=%s&" viaName) "")
-	  (if maxTransferMinutes (format "maxTransferMinutes=%s&" maxTransferMinutes) "")
-	  (if maxWalkingMinutes (format "maxWalkingMinutes=%s&" maxWalkingMinutes) "")
-	  (format "average=%s&" walkingSpeed)
-	  (if cyclePreference (format "cyclePreference=%s&" cyclePreference) "")
-	  (if adjustment (format "adjustment=%s&" adjustment) "")
-	  (if bikeProficiency (format "bikeProficiency=%s&" bikeProficiency) "")
-	  (if alternativeCycle (format "alternativeCycle=%s&" alternativeCycle) "")
-	  (if alternativeWalking (format "alternativeWalking=%s&" alternativeWalking) "")
-	  (if applyHtmlMarkup (format "applyHtmlMarkup=%s&" applyHtmlMarkup) "")
-	  (if useMultiModalCall (format "useMultiModalCall=%s&" useMultiModalCall) "")
+	  (if org-tfl-jp-arg-via (format "via=%s&" org-tfl-jp-arg-via) "")
+	  (if org-tfl-jp-arg-nationalSearch
+	      (format "nationalSearch=%s&" org-tfl-jp-arg-nationalSearch) "")
+	  (if org-tfl-jp-arg-date (format "date=%s&" org-tfl-jp-arg-date) "")
+	  (if org-tfl-jp-arg-time (format "time=%s&" org-tfl-jp-arg-time) "")
+	  (format "timeIs=%s&" org-tfl-jp-arg-timeIs)
+	  (format "journeyPreference=%s&" org-tfl-jp-arg-journeyPreference)
+	  (if org-tfl-jp-arg-mode (format "mode=%s&" org-tfl-jp-arg-mode) "")
+	  (if org-tfl-jp-arg-accessibilityPreference (format "accessibilityPreference=%s&"
+					      org-tfl-jp-arg-accessibilityPreference) "")
+	  (if org-tfl-jp-arg-fromName (format "fromName=%s&" org-tfl-jp-arg-fromName) "")
+	  (if org-tfl-jp-arg-toName (format "toName=%s&" org-tfl-jp-arg-toName) "")
+	  (if org-tfl-jp-arg-viaName (format "viaName=%s&" org-tfl-jp-arg-viaName) "")
+	  (if org-tfl-jp-arg-maxTransferMinutes
+	      (format "maxTransferMinutes=%s&" org-tfl-jp-arg-maxTransferMinutes) "")
+	  (if org-tfl-jp-arg-maxWalkingMinutes
+	      (format "maxWalkingMinutes=%s&" org-tfl-jp-arg-maxWalkingMinutes) "")
+	  (format "average=%s&" org-tfl-jp-arg-walkingSpeed)
+	  (if org-tfl-jp-arg-cyclePreference
+	      (format "cyclePreference=%s&" org-tfl-jp-arg-cyclePreference) "")
+	  (if org-tfl-jp-arg-adjustment (format "adjustment=%s&" org-tfl-jp-arg-adjustment) "")
+	  (if org-tfl-jp-arg-bikeProficiency
+	      (format "bikeProficiency=%s&" org-tfl-jp-arg-bikeProficiency) "")
+	  (if org-tfl-jp-arg-alternativeCycle
+	      (format "alternativeCycle=%s&" org-tfl-jp-arg-alternativeCycle) "")
+	  (if org-tfl-jp-arg-alternativeWalking
+	      (format "alternativeWalking=%s&" org-tfl-jp-arg-alternativeWalking) "")
+	  (if org-tfl-jp-arg-applyHtmlMarkup
+	      (format "applyHtmlMarkup=%s&" org-tfl-jp-arg-applyHtmlMarkup) "")
+	  (if org-tfl-jp-arg-useMultiModalCall
+	      (format "useMultiModalCall=%s&" org-tfl-jp-arg-useMultiModalCall) "")
 ))
 
 (defun org-tfl-jp-handle-error (data response)
@@ -105,7 +133,7 @@ ARGS are ignored."
 FROM and TO are locations and can be names, Stop-IDs or coordinates of the format
 \"lonlat:0.12345,67.890\".
 VIA can be an optional place between FROM and TO.
-NATIONALSEARCH should be t for journeys outside London.
+NATIONALSEARCH should be \"True\" for journeys outside London.
 DATE of the journey in yyyyMMdd format.
 TIME of the journey in HHmm format.
 TIMEIS does the given DATE and TIME relate to departure or arrival, e.g.
@@ -126,18 +154,32 @@ ALTERNATIVECYCLE Option to determine whether to return alternative cycling journ
 ALTERNATIVEWALKING Option to determine whether to return alternative walking journey.
 APPLYHTMLMARKUP Flag to determine whether certain text (e.g. walking instructions) should be output with HTML tags or not.
 USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transport journeys, a bus journey, a cycle hire journey, a personal cycle journey and a walking journey."
+  (setq org-tfl-jp-arg-from from)
+  (setq org-tfl-jp-arg-to to)
+  (setq org-tfl-jp-arg-via via)
+  (setq org-tfl-jp-arg-nationalSearch nationalSearch)
+  (setq org-tfl-jp-arg-date date)
+  (setq org-tfl-jp-arg-time time)
+  (setq org-tfl-jp-arg-timeIs timeIs)
+  (setq org-tfl-jp-arg-journeyPreference journeyPreference)
+  (setq org-tfl-jp-arg-mode mode)
+  (setq org-tfl-jp-arg-accessibilityPreference accessibilityPreference)
+  (setq org-tfl-jp-arg-fromName fromName)
+  (setq org-tfl-jp-arg-toName toName)
+  (setq org-tfl-jp-arg-viaName viaName)
+  (setq org-tfl-jp-arg-maxTransferMinutes maxTransferMinutes)
+  (setq org-tfl-jp-arg-maxWalkingMinutes maxWalkingMinutes)
+  (setq org-tfl-jp-arg-walkingSpeed walkingSpeed)
+  (setq org-tfl-jp-arg-cyclePreference cyclePreference)
+  (setq org-tfl-jp-arg-adjustment adjustment)
+  (setq org-tfl-jp-arg-bikeProficiency bikeProficiency)
+  (setq org-tfl-jp-arg-alternativeCycle alternativeCycle)
+  (setq org-tfl-jp-arg-alternativeWalking alternativeWalking)
+  (setq org-tfl-jp-arg-applyHtmlMarkup applyHtmlMarkup)
+  (setq org-tfl-jp-arg-useMultiModalCall useMultiModalCall)
+
   (url-retrieve
-   (org-tfl-jp-make-url from to
-			:via via :nationalSearch nationalSearch
-			:date date :time time :timeIs timeIs :journeyPreference journeyPreference
-			:mode mode :accessibilityPreference accessibilityPreference
-			:fromName fromName :toName toName :viaName viaName
-			:maxTransferMinutes maxTransferMinutes
-			:maxWalkingMinutes maxWalkingMinutes :walkingSpeed walkingSpeed
-			:cyclePreference cyclePreference :adjustment adjustment
-			:bikeProficiency bikeProficiency :alternativeCycle alternativeCycle
-			:alternativeWalking alternativeWalking :applyHtmlMarkup applyHtmlMarkup
-			:useMultiModalCall useMultiModalCall)
+   (org-tfl-jp-make-url)
    'org-tfl-jp-handle))
 
 
