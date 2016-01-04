@@ -69,6 +69,8 @@
 							  "coach.svg")))
 (defconst org-tfl-icon-river-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
 							      "river-bus.svg")))
+(defconst org-tfl-icon-replacement-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							"replacement-bus.svg")))
 
 
 
@@ -78,6 +80,7 @@
    (cons "river-bus" org-tfl-icon-river-bus)
    (cons "dlr" org-tfl-icon-dlr)
    (cons "bus" org-tfl-icon-bus)
+   (cons "replacement-bus" org-tfl-icon-replacement-bus)
    (cons "tube" org-tfl-icon-tube)
    (cons "walking" org-tfl-icon-walking)
    (cons "train" org-tfl-icon-train)))
@@ -333,6 +336,8 @@ USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transp
 
 
 ;; Example calls
+;; (add-to-list 'load-path (file-name-directory (buffer-file-name)))
+;; (require 'org-tfl)
 ;; (org-tfl-jp-retrieve "lonlat:\"-0.13500003041,51.50990587838\"" "lonlat:\"-0.29547881328,51.57205666482\"")
 ;; (org-tfl-jp-retrieve "Piccadilly Circus" "Preston Road")
 ;; (org-tfl-jp)
