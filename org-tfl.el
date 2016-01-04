@@ -39,11 +39,22 @@
 (defvar org-tfl-jp-arg-applyHtmlMarkup nil)
 (defvar org-tfl-jp-arg-useMultiModalCall nil)
 
+(defvar org-tfl-jp-fromdis nil)
+(defvar org-tfl-jp-todis nil)
+(defvar org-tfl-jp-viadis nil)
+
+
 (defun org-tfl-jp-itinerary-handler (result)
+  "Show itinerary RESULT."
   (display-buffer (current-buffer))
     result)
 
 (defun org-tfl-jp-disambiguation-handler (result)
+  "Resolve disambiguation of RESULT and try again."
+  (let ((disambiguations (org-tfl-jp-get-disambiguations result)))
+    (setq org-tfl-jp-fromdis (nth 0 disambiguations))
+    (setq org-tfl-jp-todis (nth 1 disambiguations))
+    (setq org-tfl-jp-viadis (nth 2 disambiguations)))
   (display-buffer (current-buffer))
     result)
 
@@ -177,6 +188,10 @@ USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transp
   (setq org-tfl-jp-arg-alternativeWalking alternativeWalking)
   (setq org-tfl-jp-arg-applyHtmlMarkup applyHtmlMarkup)
   (setq org-tfl-jp-arg-useMultiModalCall useMultiModalCall)
+
+  (setq org-tfl-jp-fromdis nil)
+  (setq org-tfl-jp-todis nil)
+  (setq org-tfl-jp-viadis nil)
 
   (url-retrieve
    (org-tfl-jp-make-url)
