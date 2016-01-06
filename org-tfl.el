@@ -19,6 +19,9 @@
 (defvar org-tfl-jp-arg-from nil)
 (defvar org-tfl-jp-arg-to nil)
 (defvar org-tfl-jp-arg-via nil)
+(defvar org-tfl-jp-arg-from-resolved nil)
+(defvar org-tfl-jp-arg-to-resolved nil)
+(defvar org-tfl-jp-arg-via-resolved nil)
 (defvar org-tfl-jp-arg-nationalSearch nil)
 (defvar org-tfl-jp-arg-date nil)
 (defvar org-tfl-jp-arg-time nil)
@@ -86,25 +89,37 @@
    (cons "walking" org-tfl-icon-walking)
    (cons "train" org-tfl-icon-train)))
 
+(defun org-tfl-jp-format-itinerary-result (result level)
+  "Return a nice formatted string of the given itinerary RESULT and in the given org mode LEVEL."
+  (format "%s %s\n%s" (make-string level (string-to-char "*")) "Itinerary Result" result))
+
 (defun org-tfl-jp-itinerary-handler (result)
   "Show itinerary RESULT."
-  (display-buffer (current-buffer))
-    result)
+  (let ((journeys (cdr (assoc 'journeys result)))
+	(level (+ (or (org-current-level) 0) 1)))
+    (if (zerop (length journeys))
+	(message "No journeys found!")
+      (let ((buf (get-buffer-create "Itinerary Results")))
+	(display-buffer buf)
+	(with-current-buffer buf
+	  (erase-buffer)
+	  (org-mode)
+	  (insert (org-tfl-jp-format-itinerary-result result level)))))))
 
 (defun org-tfl-jp-get-disambiguations (result)
   "Set the disambiguation options from RESULT."
-  (setq org-tfl-jp-fromdis nil)
-  (setq org-tfl-jp-todis nil)
-  (setq org-tfl-jp-viadis nil)
-  (setq org-tfl-jp-fromdis
+  (setq org-tfl-jp-fromdis nil
+	org-tfl-jp-todis nil
+	org-tfl-jp-viadis nil
+	org-tfl-jp-fromdis
 	(or (cdr (assoc 'disambiguationOptions (assoc 'fromLocationDisambiguation result)))
 	    (eq (cdr (assoc 'matchStatus (assoc 'fromLocationDisambiguation result)))
-		"identified")))
-  (setq org-tfl-jp-todis
+		"identified"))
+	org-tfl-jp-todis
 	(or (cdr (assoc 'disambiguationOptions (assoc 'toLocationDisambiguation result)))
 	    (eq (cdr (assoc 'matchStatus (assoc 'toLocationDisambiguation result)))
-		"identified")))
-  (setq org-tfl-jp-viadis
+		"identified"))
+	org-tfl-jp-viadis
 	(or (cdr (assoc 'disambiguationOptions (assoc 'viaLocationDisambiguation result)))
 	    (eq (cdr (assoc 'matchStatus (assoc 'viaLocationDisambiguation result)))
 		"identified"))))
@@ -288,33 +303,36 @@ ALTERNATIVECYCLE Option to determine whether to return alternative cycling journ
 ALTERNATIVEWALKING Option to determine whether to return alternative walking journey.
 APPLYHTMLMARKUP Flag to determine whether certain text (e.g. walking instructions) should be output with HTML tags or not.
 USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transport journeys, a bus journey, a cycle hire journey, a personal cycle journey and a walking journey."
-  (setq org-tfl-jp-arg-from from)
-  (setq org-tfl-jp-arg-to to)
-  (setq org-tfl-jp-arg-via via)
-  (setq org-tfl-jp-arg-nationalSearch nationalSearch)
-  (setq org-tfl-jp-arg-date date)
-  (setq org-tfl-jp-arg-time time)
-  (setq org-tfl-jp-arg-timeIs timeIs)
-  (setq org-tfl-jp-arg-journeyPreference journeyPreference)
-  (setq org-tfl-jp-arg-mode mode)
-  (setq org-tfl-jp-arg-accessibilityPreference accessibilityPreference)
-  (setq org-tfl-jp-arg-fromName fromName)
-  (setq org-tfl-jp-arg-toName toName)
-  (setq org-tfl-jp-arg-viaName viaName)
-  (setq org-tfl-jp-arg-maxTransferMinutes maxTransferMinutes)
-  (setq org-tfl-jp-arg-maxWalkingMinutes maxWalkingMinutes)
-  (setq org-tfl-jp-arg-walkingSpeed walkingSpeed)
-  (setq org-tfl-jp-arg-cyclePreference cyclePreference)
-  (setq org-tfl-jp-arg-adjustment adjustment)
-  (setq org-tfl-jp-arg-bikeProficiency bikeProficiency)
-  (setq org-tfl-jp-arg-alternativeCycle alternativeCycle)
-  (setq org-tfl-jp-arg-alternativeWalking alternativeWalking)
-  (setq org-tfl-jp-arg-applyHtmlMarkup applyHtmlMarkup)
-  (setq org-tfl-jp-arg-useMultiModalCall useMultiModalCall)
+  (setq org-tfl-jp-arg-from from
+	org-tfl-jp-arg-to to
+	org-tfl-jp-arg-via via
+	org-tfl-jp-arg-from-resolved from
+	org-tfl-jp-arg-to-resolved to
+	org-tfl-jp-arg-via-resolved via
+	org-tfl-jp-arg-nationalSearch nationalSearch
+	org-tfl-jp-arg-date date
+	org-tfl-jp-arg-time time
+	org-tfl-jp-arg-timeIs timeIs
+	org-tfl-jp-arg-journeyPreference journeyPreference
+	org-tfl-jp-arg-mode mode
+	org-tfl-jp-arg-accessibilityPreference accessibilityPreference
+	org-tfl-jp-arg-fromName fromName
+	org-tfl-jp-arg-toName toName
+	org-tfl-jp-arg-viaName viaName
+	org-tfl-jp-arg-maxTransferMinutes maxTransferMinutes
+	org-tfl-jp-arg-maxWalkingMinutes maxWalkingMinutes
+	org-tfl-jp-arg-walkingSpeed walkingSpeed
+	org-tfl-jp-arg-cyclePreference cyclePreference
+	org-tfl-jp-arg-adjustment adjustment
+	org-tfl-jp-arg-bikeProficiency bikeProficiency
+	org-tfl-jp-arg-alternativeCycle alternativeCycle
+	org-tfl-jp-arg-alternativeWalking alternativeWalking
+	org-tfl-jp-arg-applyHtmlMarkup applyHtmlMarkup
+	org-tfl-jp-arg-useMultiModalCall useMultiModalCall
 
-  (setq org-tfl-jp-fromdis nil)
-  (setq org-tfl-jp-todis nil)
-  (setq org-tfl-jp-viadis nil)
+	org-tfl-jp-fromdis nil
+	org-tfl-jp-todis nil
+	org-tfl-jp-viadis nil)
 
   (url-retrieve
    (org-tfl-jp-make-url)
