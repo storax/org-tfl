@@ -19,9 +19,6 @@
 (defvar org-tfl-jp-arg-from nil)
 (defvar org-tfl-jp-arg-to nil)
 (defvar org-tfl-jp-arg-via nil)
-(defvar org-tfl-jp-arg-from-resolved nil)
-(defvar org-tfl-jp-arg-to-resolved nil)
-(defvar org-tfl-jp-arg-via-resolved nil)
 (defvar org-tfl-jp-arg-nationalSearch nil)
 (defvar org-tfl-jp-arg-date nil)
 (defvar org-tfl-jp-arg-time nil)
@@ -46,6 +43,10 @@
 (defvar org-tfl-jp-fromdis nil)
 (defvar org-tfl-jp-todis nil)
 (defvar org-tfl-jp-viadis nil)
+(defvar org-tfl-jp-from-common nil)
+(defvar org-tfl-jp-to-common nil)
+(defvar org-tfl-jp-via-common nil)
+
 
 (cl-defun org-tfl-create-icon (path &optional (asc 80) (text "  "))
   "Return string with icon at PATH displayed with ascent ASC and TEXT."
@@ -89,9 +90,45 @@
    (cons "walking" org-tfl-icon-walking)
    (cons "train" org-tfl-icon-train)))
 
+(defun org-tfl-format-date (tfldate)
+  "Format the TFLDATE string."
+  (string-match "\\([0-9]\\{4\\}\\)-\\([0-9]\\{2\\}\\)-\\([0-9]\\{2\\}\\)T\\([0-9]\\{2\\}\\):\\([0-9]\\{2\\}\\):\\([0-9]\\{2\\}\\)" tfldate)
+  (let ((time (encode-time
+	      (string-to-number (match-string 6 tfldate))
+	      (string-to-number (match-string 5 tfldate))
+	      (string-to-number (match-string 4 tfldate))
+	      (string-to-number (match-string 3 tfldate))
+	      (string-to-number (match-string 2 tfldate))
+	      (string-to-number (match-string 1 tfldate)))))
+    (if (zerop (- (time-to-days time)
+		  (time-to-days (current-time))))
+	(format-time-string "%H:%M" time)
+      (format-time-string "%d.%m.%Y %H:%M" time))))
+
+(defun org-tfl-jp-format-journey (journey level)
+  "Return a formatted string for the given JOURNEY at the given org mode LEVEL."
+  (format
+   "%s %smin Departs: %s Arrives: %s"
+   (make-string level (string-to-char "*"))
+   (cdr (assoc 'duration journey))
+   (org-tfl-format-date (cdr (assoc 'startDateTime journey)))
+   (org-tfl-format-date (cdr (assoc 'arrivalDateTime journey)))))
+
 (defun org-tfl-jp-format-itinerary-result (result level)
   "Return a nice formatted string of the given itinerary RESULT and in the given org mode LEVEL."
-  (format "%s %s\n%s" (make-string level (string-to-char "*")) "Itinerary Result" result))
+  (format
+   "%s Itinerary Result from %s to %s%s:\n%s"
+   (make-string level (string-to-char "*"))
+   org-tfl-jp-from-common
+   org-tfl-jp-to-common
+   (if org-tfl-jp-via-common
+       (format
+	" via %s"
+	org-tfl-jp-via-common)
+     "")
+   (mapconcat
+    `(lambda (journey) (org-tfl-jp-format-journey journey ,(+ level 1)))
+    (cdr (assoc 'journeys result)) "\n")))
 
 (defun org-tfl-jp-itinerary-handler (result)
   "Show itinerary RESULT."
@@ -148,14 +185,12 @@
 (defun org-tfl-jp-transform-disambiguations (candidates)
   "Transform disambiguation options CANDIDATES."
   (mapcar (lambda (cand) (cons (org-tfl-jp-pp-disambiguation cand)
-			       (format "%s,%s"
-				 (cdr (assoc 'lat (assoc 'place cand)))
-				 (cdr (assoc 'lon (assoc 'place cand))))))
+			       cand))
 	  candidates)
   )
 
-(defun org-tfl-jp-resolve-helm (cands var name)
-  "Let the user select CANDS to set VAR.
+(defun org-tfl-jp-resolve-helm (cands var commonvar name)
+  "Let the user select CANDS to set VAR and COMMONVAR.
 
 NAME for the helm section.
 Afterwards 'org-tfl-jp-resolve-disambiguation' will be called."
@@ -163,8 +198,12 @@ Afterwards 'org-tfl-jp-resolve-disambiguation' will be called."
    :sources `(((name . ,name)
 	       (candidates . ,(org-tfl-jp-transform-disambiguations (eval cands)))
 	       (action . (lambda (option)
+			   (message "%s" option)
 			   (setq ,cands nil)
-			   (setq ,var option)
+			   (setq ,commonvar (cdr (assoc 'commonName (assoc 'place option))))
+			   (setq ,var (format "%s,%s"
+					      (cdr (assoc 'lat (assoc 'place option)))
+					      (cdr (assoc 'lon (assoc 'place option)))))
 			   (org-tfl-jp-resolve-disambiguation)))))))
 
 (defun org-tfl-jp-resolve-disambiguation ()
@@ -174,14 +213,17 @@ If there are no options retrieve itinerary."
   (cond ((vectorp org-tfl-jp-fromdis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-fromdis
 				  'org-tfl-jp-arg-from
+				  'org-tfl-jp-from-common
 				  (format "Select FROM location for %s." org-tfl-jp-arg-from)))
 	((vectorp org-tfl-jp-todis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-todis
 				  'org-tfl-jp-arg-to
+				  'org-tfl-jp-to-common
 				  (format "Select TO location for %s." org-tfl-jp-arg-to)))
 	((vectorp org-tfl-jp-viadis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-viadis
 				  'org-tfl-jp-arg-via
+				  'org-tfl-jp-via-common
 				  (format "Select VIA location for %s." org-tfl-jp-arg-via)))
 	(t
 	 (url-retrieve
@@ -306,9 +348,9 @@ USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transp
   (setq org-tfl-jp-arg-from from
 	org-tfl-jp-arg-to to
 	org-tfl-jp-arg-via via
-	org-tfl-jp-arg-from-resolved from
-	org-tfl-jp-arg-to-resolved to
-	org-tfl-jp-arg-via-resolved via
+	org-tfl-jp-from-common from
+	org-tfl-jp-to-common to
+	org-tfl-jp-via-common via
 	org-tfl-jp-arg-nationalSearch nationalSearch
 	org-tfl-jp-arg-date date
 	org-tfl-jp-arg-time time
