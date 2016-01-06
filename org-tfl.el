@@ -105,24 +105,38 @@
 	(format-time-string "%H:%M" time)
       (format-time-string "%d.%m.%Y %H:%M" time))))
 
-(defun org-tfl-jp-format-mode-icons (journey)
-  "Return a formatted string with the mode icons for JOURNEY legs."
+(defun org-tfl-jp-format-mode-icons (legs)
+  "Return a formatted string with the mode icons for LEGS."
   (mapconcat
    (lambda (leg)
      (or (cdr (assoc (cdr (assoc 'id (assoc 'mode leg))) org-tfl-mode-icons))
 	 (cdr (assoc 'name (assoc 'mode leg)))))
-   (cdr (assoc 'legs journey))
+   legs
    " "))
+
+(defun org-tfl-jp-format-leg (leg)
+  "Return a formatted string for the given LEG."
+  (format
+   "%s %s %s %3smin "
+   (org-tfl-format-date (cdr (assoc 'departureTime leg)))
+   (cdr (assoc (cdr (assoc 'id (assoc 'mode leg))) org-tfl-mode-icons))
+   (cdr (assoc 'commonName (assoc 'departurePoint leg)))
+   (cdr (assoc 'duration leg)))
+  )
 
 (defun org-tfl-jp-format-journey (journey level)
   "Return a formatted string for the given JOURNEY at the given org mode LEVEL."
-  (format
-   "%s %3smin %s Departs: %s Arrives: %s"
-   (make-string level (string-to-char "*"))
-   (cdr (assoc 'duration journey))
-   (org-tfl-jp-format-mode-icons journey)
-   (org-tfl-format-date (cdr (assoc 'startDateTime journey)))
-   (org-tfl-format-date (cdr (assoc 'arrivalDateTime journey)))))
+  (let ((legs (cdr (assoc 'legs journey))))
+    (format
+     "%s %3smin %s Departs: %s Arrives: %s\n%s"
+     (make-string level (string-to-char "*"))
+     (cdr (assoc 'duration journey))
+     (org-tfl-jp-format-mode-icons legs)
+     (org-tfl-format-date (cdr (assoc 'startDateTime journey)))
+     (org-tfl-format-date (cdr (assoc 'arrivalDateTime journey)))
+     (mapconcat 'org-tfl-jp-format-leg
+		legs
+		"\n"))))
 
 (defun org-tfl-jp-format-itinerary-result (result level)
   "Return a nice formatted string of the given itinerary RESULT and in the given org mode LEVEL."
