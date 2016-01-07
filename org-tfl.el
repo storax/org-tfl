@@ -86,6 +86,8 @@
 							      "river-bus.svg")))
 (defconst org-tfl-icon-replacement-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
 							"replacement-bus.svg")))
+(defconst org-tfl-icon-disruption (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							       "disruption.svg")))
 
 (defvar org-tfl-mode-icons
   (list
@@ -202,12 +204,15 @@
 (defun org-tfl-jp-format-leg (leg level)
   "Return a formatted string for the given LEG at the given 'org-mode' LEVEL."
   (format
-   "%s %3smin %s %s %s\n%s"
+   "%s %3smin %s %s %s%s\n%s"
    (make-string level (string-to-char "*"))
    (cdr (assoc 'duration leg))
    (org-tfl-format-date (cdr (assoc 'departureTime leg)))
    (or (cdr (assoc (cdr (assoc 'id (assoc 'mode leg))) org-tfl-mode-icons))
        (cdr (assoc 'name (assoc 'mode leg))))
+   (if (equal (cdr (assoc 'isDisrupted leg)) :json-false)
+       ""
+     (concat org-tfl-icon-disruption " "))
    (cdr (assoc 'summary (assoc 'instruction leg)))
    (org-tfl-jp-format-leg-detailed leg (+ level 1))))
 
