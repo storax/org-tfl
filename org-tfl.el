@@ -363,13 +363,17 @@ If there are no options retrieve itinerary."
   "Create journey planner url.
 
 For keys see 'org-tfl-jp-retrieve'."
-  (replace-regexp-in-string "&+$" "" (concat org-tfl-api-base-url
-	  (format org-tfl-api-jp org-tfl-jp-arg-from org-tfl-jp-arg-to)
+  (replace-regexp-in-string
+   "&+$" ""
+   (concat org-tfl-api-base-url
+	   (format org-tfl-api-jp
+		   (url-hexify-string org-tfl-jp-arg-from)
+		   (url-hexify-string org-tfl-jp-arg-to))
 	  "?"
 	  (if (and org-tfl-api-jp org-tfl-api-key)
 	      (format "app_id=%s&app_key=%s&" (or org-tfl-api-id "") (or org-tfl-api-key ""))
 	    "")
-	  (if org-tfl-jp-arg-via (format "via=%s&" org-tfl-jp-arg-via) "")
+	  (if org-tfl-jp-arg-via (format "via=%s&" (url-hexify-string org-tfl-jp-arg-via)) "")
 	  (if org-tfl-jp-arg-nationalSearch
 	      (format "nationalSearch=%s&" org-tfl-jp-arg-nationalSearch) "")
 	  (if org-tfl-jp-arg-date (format "date=%s&" org-tfl-jp-arg-date) "")
@@ -432,7 +436,7 @@ ARGS are ignored."
 	  (fromName nil) (toName nil) (viaName nil) (maxTransferMinutes nil)
 	  (maxWalkingMinutes nil) (walkingSpeed "average") (cyclePreference nil)
 	  (adjustment nil) (bikeProficiency nil) (alternativeCycle nil)
-	  (alternativeWalking "True") (applyHtmlMarkup nil) (useMultiModalCall nil))
+	  (alternativeWalking nil) (applyHtmlMarkup nil) (useMultiModalCall nil))
   "Retrieve journey result FROM TO with PARAMS.
 
 FROM and TO are locations and can be names, Stop-IDs or coordinates of the format
