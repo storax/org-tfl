@@ -13,9 +13,17 @@
   "Org mode Transport for london"
   :group 'org)
 
+(defcustom org-tfl-api-id nil
+  "The application id for the Transport for London API."
+  :type 'string
+  :group 'org-tfl)
+
+(defcustom org-tfl-api-key nil
+  "The application key for the Transport for London API."
+  :type 'string
+  :group 'org-tfl)
+
 (defvar url-http-end-of-headers nil)
-(defvar org-tfl-api-id "f9af66c5")
-(defvar org-tfl-api-key nil)
 (defvar org-tfl-api-base-url "https://api.tfl.gov.uk/")
 (defvar org-tfl-api-jp "Journey/JourneyResults/%s/to/%s")
 
