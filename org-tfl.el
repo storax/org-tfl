@@ -43,10 +43,6 @@
 (defvar org-tfl-jp-fromdis nil)
 (defvar org-tfl-jp-todis nil)
 (defvar org-tfl-jp-viadis nil)
-(defvar org-tfl-jp-from-common nil)
-(defvar org-tfl-jp-to-common nil)
-(defvar org-tfl-jp-via-common nil)
-
 
 (cl-defun org-tfl-create-icon (path &optional (asc 80) (text "  "))
   "Return string with icon at PATH displayed with ascent ASC and TEXT."
@@ -61,7 +57,9 @@
 (defconst org-tfl-icon-location (org-tfl-create-icon (concat (file-name-directory load-file-name)
 							"location.svg")))
 (defconst org-tfl-icon-tube (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							"tube.svg")))
+							 "tube.svg")))
+(defconst org-tfl-icon-overground (org-tfl-create-icon (concat (file-name-directory load-file-name)
+							       "overground.svg")))
 (defconst org-tfl-icon-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
 							"bus.svg")))
 (defconst org-tfl-icon-train (org-tfl-create-icon (concat (file-name-directory load-file-name)
@@ -82,12 +80,14 @@
 (defvar org-tfl-mode-icons
   (list
    (cons "coach" org-tfl-icon-coach)
+   (cons "overground" org-tfl-icon-overground)
    (cons "river-bus" org-tfl-icon-river-bus)
    (cons "dlr" org-tfl-icon-dlr)
    (cons "bus" org-tfl-icon-bus)
    (cons "replacement-bus" org-tfl-icon-replacement-bus)
    (cons "tube" org-tfl-icon-tube)
    (cons "walking" org-tfl-icon-walking)
+   (cons "national-rail" org-tfl-icon-train)
    (cons "train" org-tfl-icon-train)))
 
 (defun org-tfl-format-date (tfldate)
@@ -103,7 +103,7 @@
     (if (zerop (- (time-to-days time)
 		  (time-to-days (current-time))))
 	(format-time-string "%H:%M" time)
-      (format-time-string "%d.%m.%Y %H:%M" time))))
+      (format-time-string "%H:%M %d.%m.%Y" time))))
 
 (defun org-tfl-jp-format-mode-icons (legs)
   "Return a formatted string with the mode icons for LEGS."
@@ -114,41 +114,59 @@
    legs
    " "))
 
-(defun org-tfl-jp-format-leg (leg)
-  "Return a formatted string for the given LEG."
+(defun org-tfl-format-line (line)
+  "Return a new formatted propertized string for the given LINE."
+  (put-text-property 0 (length line) 'face '(:foreground "red") line)
+  (put-text-property 0 (length line) 'font-lock-ignore t line)
+  line)
+
+(defun org-tfl-jp-format-leg-detailed (leg level)
+  "Return a detailed formatted string for the given LEG at the given 'org-mode' LEVEL."
   (format
-   "%s %s %s %3smin "
+   "%s %s"
+   (make-string level (string-to-char "*"))
+   (org-tfl-format-line (cdr (assoc 'detailed (assoc 'instruction leg))))))
+
+(defun org-tfl-jp-format-leg (leg level)
+  "Return a formatted string for the given LEG at the given 'org-mode' LEVEL."
+  (format
+   "%s %3smin %s %s %s\n%s"
+   (make-string level (string-to-char "*"))
+   (cdr (assoc 'duration leg))
    (org-tfl-format-date (cdr (assoc 'departureTime leg)))
-   (cdr (assoc (cdr (assoc 'id (assoc 'mode leg))) org-tfl-mode-icons))
-   (cdr (assoc 'commonName (assoc 'departurePoint leg)))
-   (cdr (assoc 'duration leg)))
+   (or (cdr (assoc (cdr (assoc 'id (assoc 'mode leg))) org-tfl-mode-icons))
+       (cdr (assoc 'name (assoc 'mode leg))))
+   (cdr (assoc 'summary (assoc 'instruction leg)))
+   (org-tfl-jp-format-leg-detailed leg (+ level 1))
+   )
   )
 
+
 (defun org-tfl-jp-format-journey (journey level)
-  "Return a formatted string for the given JOURNEY at the given org mode LEVEL."
+  "Return a formatted string for the given JOURNEY at the given 'org-mode' LEVEL."
   (let ((legs (cdr (assoc 'legs journey))))
     (format
-     "%s %3smin %s Departs: %s Arrives: %s\n%s"
+     "%s %4smin %s Departs: %s Arrives: %s\n%s"
      (make-string level (string-to-char "*"))
      (cdr (assoc 'duration journey))
      (org-tfl-jp-format-mode-icons legs)
      (org-tfl-format-date (cdr (assoc 'startDateTime journey)))
      (org-tfl-format-date (cdr (assoc 'arrivalDateTime journey)))
-     (mapconcat 'org-tfl-jp-format-leg
+     (mapconcat `(lambda (leg) (org-tfl-jp-format-leg leg ,(+ level 1)))
 		legs
 		"\n"))))
 
 (defun org-tfl-jp-format-itinerary-result (result level)
-  "Return a nice formatted string of the given itinerary RESULT and in the given org mode LEVEL."
+  "Return a nice formatted string of the given itinerary RESULT and in the given 'org mode' LEVEL."
   (format
    "%s Itinerary Result from %s to %s%s:\n%s"
    (make-string level (string-to-char "*"))
-   org-tfl-jp-from-common
-   org-tfl-jp-to-common
-   (if org-tfl-jp-via-common
+   org-tfl-jp-arg-fromName
+   org-tfl-jp-arg-toName
+   (if org-tfl-jp-arg-viaName
        (format
 	" via %s"
-	org-tfl-jp-via-common)
+	org-tfl-jp-arg-viaName)
      "")
    (mapconcat
     `(lambda (journey) (org-tfl-jp-format-journey journey ,(+ level 1)))
@@ -237,17 +255,17 @@ If there are no options retrieve itinerary."
   (cond ((vectorp org-tfl-jp-fromdis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-fromdis
 				  'org-tfl-jp-arg-from
-				  'org-tfl-jp-from-common
+				  'org-tfl-jp-arg-fromName
 				  (format "Select FROM location for %s." org-tfl-jp-arg-from)))
 	((vectorp org-tfl-jp-todis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-todis
 				  'org-tfl-jp-arg-to
-				  'org-tfl-jp-to-common
+				  'org-tfl-jp-arg-toName
 				  (format "Select TO location for %s." org-tfl-jp-arg-to)))
 	((vectorp org-tfl-jp-viadis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-viadis
 				  'org-tfl-jp-arg-via
-				  'org-tfl-jp-via-common
+				  'org-tfl-jp-arg-viaName
 				  (format "Select VIA location for %s." org-tfl-jp-arg-via)))
 	(t
 	 (url-retrieve
@@ -372,9 +390,9 @@ USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transp
   (setq org-tfl-jp-arg-from from
 	org-tfl-jp-arg-to to
 	org-tfl-jp-arg-via via
-	org-tfl-jp-from-common from
-	org-tfl-jp-to-common to
-	org-tfl-jp-via-common via
+	org-tfl-jp-arg-fromName from
+	org-tfl-jp-arg-toName to
+	org-tfl-jp-arg-viaName via
 	org-tfl-jp-arg-nationalSearch nationalSearch
 	org-tfl-jp-arg-date date
 	org-tfl-jp-arg-time time
