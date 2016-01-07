@@ -254,7 +254,8 @@
 	  (erase-buffer)
 	  (org-mode)
 	  (font-lock-add-keywords nil org-tfl-line-faces t)
-	  (insert (org-tfl-jp-format-itinerary-result result level)))))))
+	  (insert (org-tfl-jp-format-itinerary-result result level))
+	  (hide-sublevels (+ level 1)))))))
 
 (defun org-tfl-jp-get-disambiguations (result)
   "Set the disambiguation options from RESULT."
