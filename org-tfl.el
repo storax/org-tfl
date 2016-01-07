@@ -9,6 +9,10 @@
 (require 'helm)
 (require 'org)
 
+(defgroup org-tfl nil
+  "Org mode Transport for london"
+  :group 'org)
+
 (defvar url-http-end-of-headers nil)
 (defvar org-tfl-api-id "f9af66c5")
 (defvar org-tfl-api-key nil)
@@ -75,8 +79,6 @@
 (defconst org-tfl-icon-replacement-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
 							"replacement-bus.svg")))
 
-
-
 (defvar org-tfl-mode-icons
   (list
    (cons "coach" org-tfl-icon-coach)
@@ -89,6 +91,74 @@
    (cons "walking" org-tfl-icon-walking)
    (cons "national-rail" org-tfl-icon-train)
    (cons "train" org-tfl-icon-train)))
+
+(defface org-tfl-bakerloo-face
+  '((t (:foreground "white" :background "#996633")))
+  "Bakerloo Line Face"
+  :group 'org-tfl)
+
+(defface org-tfl-central-face
+  '((t (:foreground "white" :background "#CC3333")))
+  "Central Line Face"
+  :group 'org-tfl)
+
+(defface org-tfl-circle-face
+  '((t (:foreground "white" :background "#FFCC00")))
+  "Circle Line Face"
+  :group 'org-tfl)
+
+(defface org-tfl-district-face
+  '((t (:foreground "white" :background "#006633")))
+  "District Line Face"
+  :group 'org-tfl)
+
+(defface org-tfl-hammersmith-face
+  '((t (:foreground "white" :background "#CC9999")))
+  "Hammersmith and City Line Face"
+  :group 'org-tfl)
+
+(defface org-tfl-jubliee-face
+  '((t (:foreground "white" :background "#868F98")))
+  "Jubliee Line Face"
+  :group 'org-tfl)
+
+(defface org-tfl-metropolitan-face
+  '((t (:foreground "white" :background "#660066")))
+  "Metropolitan Line Face"
+  :group 'org-tfl)
+
+(defface org-tfl-northern-face
+  '((t (:foreground "white" :background "#000000")))
+  "Northern Line Face"
+  :group 'org-tfl)
+
+(defface org-tfl-piccadilly-face
+  '((t (:foreground "white" :background "#000099")))
+  "Piccadilly Line Face"
+  :group 'org-tfl)
+
+(defface org-tfl-victoria-face
+  '((t (:foreground "white" :background "#0099CC")))
+  "Victoria Line Face"
+  :group 'org-tfl)
+
+(defface org-tfl-waterloo-face
+  '((t (:foreground "white" :background "#66CCCC")))
+  "Waterloo and City Line Face"
+  :group 'org-tfl)
+
+(defvar org-tfl-line-faces
+  '(("Bakerloo line" 0 'org-tfl-bakerloo-face prepend)
+    ("Central line" 0 'org-tfl-central-face prepend)
+    ("Circle line" 0 'org-tfl-circle-face prepend)
+    ("District line" 0 'org-tfl-district-face prepend)
+    ("Hammersmith and City line" 0 'org-tfl-hammersmith-face prepend)
+    ("Jubliee line" 0 'org-tfl-jubliee-face prepend)
+    ("Metropolitan line" 0 'org-tfl-metropolitan-face prepend)
+    ("Northern line" 0 'org-tfl-northern-face prepend)
+    ("Piccadilly line" 0 'org-tfl-piccadilly-face prepend)
+    ("Victoria line" 0 'org-tfl-victoria-face prepend)
+    ("Waterloo and City line" 0 'org-tfl-waterloo-face prepend)))
 
 (defun org-tfl-format-date (tfldate)
   "Format the TFLDATE string."
@@ -114,18 +184,12 @@
    legs
    " "))
 
-(defun org-tfl-format-line (line)
-  "Return a new formatted propertized string for the given LINE."
-  (put-text-property 0 (length line) 'face '(:foreground "red") line)
-  (put-text-property 0 (length line) 'font-lock-ignore t line)
-  line)
-
 (defun org-tfl-jp-format-leg-detailed (leg level)
   "Return a detailed formatted string for the given LEG at the given 'org-mode' LEVEL."
   (format
    "%s %s"
    (make-string level (string-to-char "*"))
-   (org-tfl-format-line (cdr (assoc 'detailed (assoc 'instruction leg))))))
+   (cdr (assoc 'detailed (assoc 'instruction leg)))))
 
 (defun org-tfl-jp-format-leg (leg level)
   "Return a formatted string for the given LEG at the given 'org-mode' LEVEL."
@@ -137,9 +201,7 @@
    (or (cdr (assoc (cdr (assoc 'id (assoc 'mode leg))) org-tfl-mode-icons))
        (cdr (assoc 'name (assoc 'mode leg))))
    (cdr (assoc 'summary (assoc 'instruction leg)))
-   (org-tfl-jp-format-leg-detailed leg (+ level 1))
-   )
-  )
+   (org-tfl-jp-format-leg-detailed leg (+ level 1))))
 
 
 (defun org-tfl-jp-format-journey (journey level)
@@ -183,6 +245,7 @@
 	(with-current-buffer buf
 	  (erase-buffer)
 	  (org-mode)
+	  (font-lock-add-keywords nil org-tfl-line-faces t)
 	  (insert (org-tfl-jp-format-itinerary-result result level)))))))
 
 (defun org-tfl-jp-get-disambiguations (result)
