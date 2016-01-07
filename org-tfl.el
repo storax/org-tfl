@@ -194,12 +194,45 @@
    legs
    " "))
 
+(defun org-tfl-jp-format-leg-disruption-icon (leg)
+  "Return a disruption icon if there are disruptions for the given LEG."
+  (if (equal (cdr (assoc 'isDisrupted leg)) :json-false)
+      ""
+    (concat org-tfl-icon-disruption " ")))
+
+(defun org-tfl-chop (s len)
+  "If S is longer than LEN, wrap the words with newlines."
+  (with-temp-buffer
+    (insert s)
+    (let ((fill-column len))
+      (fill-region (point-min) (point-max)))
+    (buffer-substring-no-properties (point-min) (point-max))))
+
+(defun org-tfl-jp-format-leg-disruptions (leg level)
+  "Return a formatted string with disruptions for the given LEG at 'org-mode' LEVEL."
+  (if (equal (cdr (assoc 'isDisrupted leg)) :json-false)
+      ""
+      (format
+       "\n%s Disruptions\n%s"
+       (make-string level (string-to-char "*"))
+       (mapconcat
+	`(lambda (disruption)
+	   (format
+	    "%s %s\n%s"
+	    (make-string ,(+ level 1) (string-to-char "*"))
+	    (cdr (assoc 'categoryDescription disruption))
+	    (org-tfl-chop (cdr (assoc 'description disruption)) ,fill-column)))
+	(cdr (assoc 'disruptions leg))
+	"\n"))))
+
 (defun org-tfl-jp-format-leg-detailed (leg level)
   "Return a detailed formatted string for the given LEG at the given 'org-mode' LEVEL."
   (format
-   "%s %s"
+   "%s %s%s%s"
    (make-string level (string-to-char "*"))
-   (cdr (assoc 'detailed (assoc 'instruction leg)))))
+   (org-tfl-jp-format-leg-disruption-icon leg)
+   (cdr (assoc 'detailed (assoc 'instruction leg)))
+   (org-tfl-jp-format-leg-disruptions leg (+ level 1))))
 
 (defun org-tfl-jp-format-leg (leg level)
   "Return a formatted string for the given LEG at the given 'org-mode' LEVEL."
@@ -210,12 +243,9 @@
    (org-tfl-format-date (cdr (assoc 'departureTime leg)))
    (or (cdr (assoc (cdr (assoc 'id (assoc 'mode leg))) org-tfl-mode-icons))
        (cdr (assoc 'name (assoc 'mode leg))))
-   (if (equal (cdr (assoc 'isDisrupted leg)) :json-false)
-       ""
-     (concat org-tfl-icon-disruption " "))
+   (org-tfl-jp-format-leg-disruption-icon leg)
    (cdr (assoc 'summary (assoc 'instruction leg)))
    (org-tfl-jp-format-leg-detailed leg (+ level 1))))
-
 
 (defun org-tfl-jp-format-journey (journey level)
   "Return a formatted string for the given JOURNEY at the given 'org-mode' LEVEL."
