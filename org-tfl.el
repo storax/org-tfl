@@ -541,16 +541,22 @@ HANDLEFUNC is the function to call after retrieving the result."
 (defvar org-tlf-to-history nil)
 (defvar org-tlf-via-history nil)
 
-(defun org-tfl-jp (from to via datetime)
-  "Plan journey FROM TO VIA at DATETIME."
+(defun org-tfl-jp (from to via datetime timeIs)
+  "Plan journey FROM TO VIA at DATETIME.
+
+TIMEIS if t, DATETIME is the departing time."
   (interactive
    (list (read-from-minibuffer "From: " nil nil nil 'org-tfl-from-history)
 	 (read-from-minibuffer "To: " nil nil nil 'org-tfl-to-history)
 	 (read-from-minibuffer "Via: " nil nil nil 'org-tfl-via-history)
-	 (org-read-date t t)))
+	 (org-read-date t t)
+	 (yes-or-no-p "Time is departure time? No for arrival time:")))
   (let ((date (format-time-string "%Y%m%d" datetime))
-	(time (format-time-string "%H%M" datetime)))
-    (org-tfl-jp-retrieve from to :via (if (equal "" via) nil via) :date date :time time)))
+	(time (format-time-string "%H%M" datetime))
+	(timeis (if timeIs "Departing" "Arriving")))
+    (org-tfl-jp-retrieve from to
+			 :via (if (equal "" via) nil via)
+			 :date date :time time :timeIs timeis)))
 
 (cl-defun org-tfl-jp-retrieve-org (from to &rest keywords &allow-other-keys)
   "Use 'org-tfl-jp-handle-org' as handlefunc.
