@@ -55,6 +55,9 @@
 (defvar org-tfl-jp-fromdis nil)
 (defvar org-tfl-jp-todis nil)
 (defvar org-tfl-jp-viadis nil)
+(defvar org-tfl-org-buffer nil)
+(defvar org-tfl-org-buffer-point nil)
+
 
 (cl-defun org-tfl-create-icon (path &optional (asc 80) (text "  "))
   "Return string with icon at PATH displayed with ascent ASC and TEXT."
@@ -347,7 +350,6 @@ Afterwards 'org-tfl-jp-resolve-disambiguation' will be called."
    :sources `(((name . ,name)
 	       (candidates . ,(org-tfl-jp-transform-disambiguations (eval cands)))
 	       (action . (lambda (option)
-			   (message "%s" option)
 			   (setq ,cands nil)
 			   (setq ,commonvar (cdr (assoc 'commonName (assoc 'place option))))
 			   (setq ,var (format "%s,%s"
@@ -471,7 +473,8 @@ ARGS are ignored."
 	  (fromName nil) (toName nil) (viaName nil) (maxTransferMinutes nil)
 	  (maxWalkingMinutes nil) (walkingSpeed "average") (cyclePreference nil)
 	  (adjustment nil) (bikeProficiency nil) (alternativeCycle nil)
-	  (alternativeWalking nil) (applyHtmlMarkup nil) (useMultiModalCall nil))
+	  (alternativeWalking nil) (applyHtmlMarkup nil) (useMultiModalCall nil)
+	  (handlefunc 'org-tfl-jp-handle))
   "Retrieve journey result FROM TO with PARAMS.
 
 FROM and TO are locations and can be names, Stop-IDs or coordinates of the format
@@ -497,7 +500,8 @@ BIKEPROFICIENCY comma seperated list, possible options \"easy,moderate,fast\".
 ALTERNATIVECYCLE Option to determine whether to return alternative cycling journey.
 ALTERNATIVEWALKING Option to determine whether to return alternative walking journey.
 APPLYHTMLMARKUP Flag to determine whether certain text (e.g. walking instructions) should be output with HTML tags or not.
-USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transport journeys, a bus journey, a cycle hire journey, a personal cycle journey and a walking journey."
+USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transport journeys, a bus journey, a cycle hire journey, a personal cycle journey and a walking journey.
+HANDLEFUNC is the function to call after retrieving the result."
   (setq org-tfl-jp-arg-from from
 	org-tfl-jp-arg-to to
 	org-tfl-jp-arg-via via
@@ -531,7 +535,7 @@ USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transp
 
   (url-retrieve
    (org-tfl-jp-make-url)
-   'org-tfl-jp-handle))
+   handlefunc))
 
 (defvar org-tlf-from-history nil)
 (defvar org-tlf-to-history nil)
@@ -548,6 +552,13 @@ USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transp
 	(time (format-time-string "%H%M" datetime)))
     (org-tfl-jp-retrieve from to :via (if (equal "" via) nil via) :date date :time time)))
 
+(cl-defun org-tfl-jp-retrieve-org (from to &rest keywords &allow-other-keys)
+  "Use 'org-tfl-jp-handle-org' as handlefunc.
+
+For the rest see 'org-tfl-jp-retrieve'."
+  (setq org-tfl-org-buffer (current-buffer))
+  (setq org-tfl-org-buffer-point (point))
+  (apply 'org-tfl-jp-retrieve from to :handlefunc 'org-tfl-jp-handle-org keywords))
 
 ;; Example calls
 ;; (add-to-list 'load-path (file-name-directory (buffer-file-name)))
