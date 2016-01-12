@@ -280,7 +280,11 @@
     `(lambda (journey) (org-tfl-jp-format-journey journey ,(+ level 1)))
     (cdr (assoc 'journeys result)) "\n")))
 
-(defun org-tfl-jp-itinerary-handler (result)
+(defun org-tfl-jp-itinerary-handler (result resulthandler)
+  "Let RESULT be handled by RESULTHANDLER."
+  (funcall resulthandler result))
+
+(defun org-tfl-jp-itinerary-show-in-buffer (result)
   "Show itinerary RESULT."
   (let ((journeys (cdr (assoc 'journeys result)))
 	(level (+ (or (org-current-level) 0) 1)))
@@ -294,6 +298,22 @@
 	  (font-lock-add-keywords nil org-tfl-line-faces t)
 	  (insert (org-tfl-jp-format-itinerary-result result level))
 	  (hide-sublevels (+ level 1)))))))
+
+(defun org-tfl-jp-itinerary-insert-org (result)
+  "Insert itinerary RESULT in org mode."
+  (let ((journeys (cdr (assoc 'journeys result))))
+    (if (zerop (length journeys))
+	(message "No journeys found!")
+      (let ((buf org-tfl-org-buffer)
+	    (p org-tfl-org-buffer-point))
+	(display-buffer buf)
+	(with-current-buffer buf
+	  (let ((level (+ (or (org-current-level) 0) 1)))
+	    (font-lock-add-keywords nil org-tfl-line-faces t)
+	    (goto-char p)
+	    (insert (org-tfl-jp-format-itinerary-result result level))
+	    (goto-char p)
+	    (hide-sublevels (+ level 1))))))))
 
 (defun org-tfl-jp-get-disambiguations (result)
   "Set the disambiguation options from RESULT."
@@ -338,14 +358,13 @@
   "Transform disambiguation options CANDIDATES."
   (mapcar (lambda (cand) (cons (org-tfl-jp-pp-disambiguation cand)
 			       cand))
-	  candidates)
-  )
+	  candidates))
 
-(defun org-tfl-jp-resolve-helm (cands var commonvar name)
+(defun org-tfl-jp-resolve-helm (cands var commonvar name resulthandler)
   "Let the user select CANDS to set VAR and COMMONVAR.
 
 NAME for the helm section.
-Afterwards 'org-tfl-jp-resolve-disambiguation' will be called."
+Afterwards 'org-tfl-jp-resolve-disambiguation' will be called with RESULTHANDLER."
   (helm
    :sources `(((name . ,name)
 	       (candidates . ,(org-tfl-jp-transform-disambiguations (eval cands)))
@@ -355,37 +374,41 @@ Afterwards 'org-tfl-jp-resolve-disambiguation' will be called."
 			   (setq ,var (format "%s,%s"
 					      (cdr (assoc 'lat (assoc 'place option)))
 					      (cdr (assoc 'lon (assoc 'place option)))))
-			   (org-tfl-jp-resolve-disambiguation)))))))
+			   (org-tfl-jp-resolve-disambiguation ',resulthandler)))))))
 
-(defun org-tfl-jp-resolve-disambiguation ()
+(defun org-tfl-jp-resolve-disambiguation (resulthandler)
   "Let the user choose from the disambiguation options.
 
-If there are no options retrieve itinerary."
+If there are no options retrieve itinerary and call RESULTHANDLER."
   (cond ((vectorp org-tfl-jp-fromdis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-fromdis
 				  'org-tfl-jp-arg-from
 				  'org-tfl-jp-arg-fromName
-				  (format "Select FROM location for %s." org-tfl-jp-arg-from)))
+				  (format "Select FROM location for %s." org-tfl-jp-arg-from)
+				  resulthandler))
 	((vectorp org-tfl-jp-todis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-todis
 				  'org-tfl-jp-arg-to
 				  'org-tfl-jp-arg-toName
-				  (format "Select TO location for %s." org-tfl-jp-arg-to)))
+				  (format "Select TO location for %s." org-tfl-jp-arg-to)
+				  resulthandler))
 	((vectorp org-tfl-jp-viadis)
 	 (org-tfl-jp-resolve-helm 'org-tfl-jp-viadis
 				  'org-tfl-jp-arg-via
 				  'org-tfl-jp-arg-viaName
-				  (format "Select VIA location for %s." org-tfl-jp-arg-via)))
+				  (format "Select VIA location for %s." org-tfl-jp-arg-via)
+				  resulthandler))
 	(t
 	 (url-retrieve
 	  (org-tfl-jp-make-url)
-	  'org-tfl-jp-handle))))
+	  `(lambda (status &rest args)
+	     (apply 'org-tfl-jp-handle ',resulthandler status args))))))
 
-(defun org-tfl-jp-disambiguation-handler (result)
-  "Resolve disambiguation of RESULT and try again."
+(defun org-tfl-jp-disambiguation-handler (result resulthandler)
+  "Resolve disambiguation of RESULT and try again with RESULTHANDLER."
   (org-tfl-jp-get-disambiguations result)
   (if (and org-tfl-jp-fromdis org-tfl-jp-todis)
-      (org-tfl-jp-resolve-disambiguation)
+      (org-tfl-jp-resolve-disambiguation resulthandler)
     (if org-tfl-jp-fromdis
 	(message "Cannot resolve To Location: %s" org-tfl-jp-arg-to)
       (message "Cannot resolve From Location: %s" org-tfl-jp-arg-from))))
@@ -451,9 +474,10 @@ For keys see 'org-tfl-jp-retrieve'."
   "Handle redirect errors with DATA and RESPONSE."
   (message "Got redirected. Are you sure you supplied the correct credentials?"))
 
-(defun org-tfl-jp-handle (status &rest args)
-  "Handle the result of a jp request with STATUS and optional ARGS.
+(defun org-tfl-jp-handle (resulthandler status &rest args)
+  "Handle the result of a jp request with RESULTHANDLER.
 
+If status is not successful other handlers are called STATUS.
 ARGS are ignored."
   (goto-char url-http-end-of-headers)
   (cond ((eq (car status) :error)
@@ -464,7 +488,7 @@ ARGS are ignored."
 	 (let* ((result (json-read))
 		(type (cdr (assoc '$type result)))
 		(handler (cdr (assoc type org-tfl-jp-handlers))))
-	   (funcall handler result)))))
+	   (funcall handler result resulthandler)))))
 
 (cl-defun org-tfl-jp-retrieve
     (from to &key
@@ -474,7 +498,7 @@ ARGS are ignored."
 	  (maxWalkingMinutes nil) (walkingSpeed "average") (cyclePreference nil)
 	  (adjustment nil) (bikeProficiency nil) (alternativeCycle nil)
 	  (alternativeWalking nil) (applyHtmlMarkup nil) (useMultiModalCall nil)
-	  (handlefunc 'org-tfl-jp-handle))
+	  (resulthandler 'org-tfl-jp-itinerary-show-in-buffer))
   "Retrieve journey result FROM TO with PARAMS.
 
 FROM and TO are locations and can be names, Stop-IDs or coordinates of the format
@@ -501,7 +525,7 @@ ALTERNATIVECYCLE Option to determine whether to return alternative cycling journ
 ALTERNATIVEWALKING Option to determine whether to return alternative walking journey.
 APPLYHTMLMARKUP Flag to determine whether certain text (e.g. walking instructions) should be output with HTML tags or not.
 USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transport journeys, a bus journey, a cycle hire journey, a personal cycle journey and a walking journey.
-HANDLEFUNC is the function to call after retrieving the result."
+RESULTHANDLER is the function to call after retrieving the result."
   (setq org-tfl-jp-arg-from from
 	org-tfl-jp-arg-to to
 	org-tfl-jp-arg-via via
@@ -535,7 +559,8 @@ HANDLEFUNC is the function to call after retrieving the result."
 
   (url-retrieve
    (org-tfl-jp-make-url)
-   handlefunc))
+   `(lambda (status &rest args)
+      (apply 'org-tfl-jp-handle ',resulthandler status args))))
 
 (defvar org-tlf-from-history nil)
 (defvar org-tlf-to-history nil)
@@ -559,12 +584,12 @@ TIMEIS if t, DATETIME is the departing time."
 			 :date date :time time :timeIs timeis)))
 
 (cl-defun org-tfl-jp-retrieve-org (from to &rest keywords &allow-other-keys)
-  "Use 'org-tfl-jp-handle-org' as handlefunc.
+  "Use 'org-tfl-jp-itinerary-org-handler' as handlefunc.
 
 For the rest see 'org-tfl-jp-retrieve'."
   (setq org-tfl-org-buffer (current-buffer))
   (setq org-tfl-org-buffer-point (point))
-  (apply 'org-tfl-jp-retrieve from to :handlefunc 'org-tfl-jp-handle-org keywords))
+  (apply 'org-tfl-jp-retrieve from to :resulthandler 'org-tfl-jp-itinerary-insert-org keywords))
 
 ;; Example calls
 ;; (add-to-list 'load-path (file-name-directory (buffer-file-name)))
