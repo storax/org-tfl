@@ -58,6 +58,10 @@
 (defvar org-tfl-org-buffer nil)
 (defvar org-tfl-org-buffer-point nil)
 
+(defvar org-tlf-from-history nil)
+(defvar org-tlf-to-history nil)
+(defvar org-tlf-via-history nil)
+
 
 (cl-defun org-tfl-create-icon (path &optional (asc 80) (text "  "))
   "Return string with icon at PATH displayed with ascent ASC and TEXT."
@@ -561,10 +565,6 @@ RESULTHANDLER is the function to call after retrieving the result."
    (org-tfl-jp-make-url)
    `(lambda (status &rest args)
       (apply 'org-tfl-jp-handle ',resulthandler status args))))
-
-(defvar org-tlf-from-history nil)
-(defvar org-tlf-to-history nil)
-(defvar org-tlf-via-history nil)
 
 (defun org-tfl-jp (from to via datetime timeIs)
   "Plan journey FROM TO VIA at DATETIME.
