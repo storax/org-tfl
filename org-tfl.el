@@ -10,7 +10,7 @@
 (require 'org)
 
 (defgroup org-tfl nil
-  "Org mode Transport for london"
+  "Org mode Transport for London."
   :group 'org)
 
 (defcustom org-tfl-api-id nil
@@ -23,11 +23,14 @@
   :type 'string
   :group 'org-tfl)
 
-(defvar url-http-end-of-headers nil)
-(defvar org-tfl-api-base-url "https://api.tfl.gov.uk/")
-(defvar org-tfl-api-jp "Journey/JourneyResults/%s/to/%s")
+(defvar url-http-end-of-headers nil
+  "The location in a buffer of a http response that's at the end of headers.")
+(defvar org-tfl-api-base-url "https://api.tfl.gov.uk/"
+  "The base url to the TFL API.")
+(defvar org-tfl-api-jp "Journey/JourneyResults/%s/to/%s"
+  "API endpoint for the journey planner.")
 
-;; JP context
+;; Journey Planner context
 (defvar org-tfl-jp-arg-from nil)
 (defvar org-tfl-jp-arg-to nil)
 (defvar org-tfl-jp-arg-via nil)
@@ -52,9 +55,11 @@
 (defvar org-tfl-jp-arg-applyHtmlMarkup nil)
 (defvar org-tfl-jp-arg-useMultiModalCall nil)
 
+;; Disambiguations
 (defvar org-tfl-jp-fromdis nil)
 (defvar org-tfl-jp-todis nil)
 (defvar org-tfl-jp-viadis nil)
+
 (defvar org-tfl-org-buffer nil)
 (defvar org-tfl-org-buffer-point nil)
 
@@ -71,30 +76,31 @@
 		 (insert-file-contents path) (buffer-string))
 	       nil t :ascent asc :mask 'heuristic)))
 
-(defconst org-tfl-icon-cam (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							"cam.svg")))
-(defconst org-tfl-icon-location (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							"location.svg")))
-(defconst org-tfl-icon-tube (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							 "tube.svg")))
-(defconst org-tfl-icon-overground (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							       "overground.svg")))
-(defconst org-tfl-icon-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							"bus.svg")))
-(defconst org-tfl-icon-train (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							"train.svg")))
-(defconst org-tfl-icon-walking (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							"walking.svg")))
-(defconst org-tfl-icon-dlr (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							"dlr.svg")))
-(defconst org-tfl-icon-coach (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							  "coach.svg")))
-(defconst org-tfl-icon-river-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							      "river-bus.svg")))
-(defconst org-tfl-icon-replacement-bus (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							"replacement-bus.svg")))
-(defconst org-tfl-icon-disruption (org-tfl-create-icon (concat (file-name-directory load-file-name)
-							       "disruption.svg")))
+;; Icons
+(defconst org-tfl-icon-cam
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "cam.svg")))
+(defconst org-tfl-icon-location
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "location.svg")))
+(defconst org-tfl-icon-tube
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "tube.svg")))
+(defconst org-tfl-icon-overground
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "overground.svg")))
+(defconst org-tfl-icon-bus
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "bus.svg")))
+(defconst org-tfl-icon-train
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "train.svg")))
+(defconst org-tfl-icon-walking
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "walking.svg")))
+(defconst org-tfl-icon-dlr
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "dlr.svg")))
+(defconst org-tfl-icon-coach
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "coach.svg")))
+(defconst org-tfl-icon-river-bus
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "river-bus.svg")))
+(defconst org-tfl-icon-replacement-bus
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "replacement-bus.svg")))
+(defconst org-tfl-icon-disruption
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "disruption.svg")))
 
 (defvar org-tfl-mode-icons
   (list
@@ -107,7 +113,8 @@
    (cons "tube" org-tfl-icon-tube)
    (cons "walking" org-tfl-icon-walking)
    (cons "national-rail" org-tfl-icon-train)
-   (cons "train" org-tfl-icon-train)))
+   (cons "train" org-tfl-icon-train))
+  "Mapping of modes to icons.")
 
 (defface org-tfl-bakerloo-face
   '((t (:foreground "white" :background "#996633")))
