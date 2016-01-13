@@ -372,7 +372,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 		"identified"))))
 
 (defun org-tfl-jp-pp-disambiguation (candidate)
-  "Nice formatting for CANDIDATE."
+  "Nice formatting for disambiguation CANDIDATE."
   (let* ((place (assoc 'place candidate))
 	 (type (eval (org-tfl-get place 'placeType)))
 	 (modes (org-tfl-get place 'modes))
@@ -393,7 +393,9 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 	   (format "%s: %s" type commonName)))))
 
 (defun org-tfl-jp-transform-disambiguations (candidates)
-  "Transform disambiguation options CANDIDATES."
+  "Transform disambiguation option CANDIDATES.
+
+Result is a list of (DISPLAY . REAL) values."
   (mapcar (lambda (cand) (cons (org-tfl-jp-pp-disambiguation cand) cand))
 	  candidates))
 
@@ -480,9 +482,12 @@ For keys see 'org-tfl-jp-retrieve'."
 	  (if org-tfl-jp-arg-mode (format "mode=%s&" org-tfl-jp-arg-mode) "")
 	  (if org-tfl-jp-arg-accessibilityPreference (format "accessibilityPreference=%s&"
 					      org-tfl-jp-arg-accessibilityPreference) "")
-	  (if org-tfl-jp-arg-fromName (format "fromName=%s&" org-tfl-jp-arg-fromName) "")
-	  (if org-tfl-jp-arg-toName (format "toName=%s&" org-tfl-jp-arg-toName) "")
-	  (if org-tfl-jp-arg-viaName (format "viaName=%s&" org-tfl-jp-arg-viaName) "")
+	  (if org-tfl-jp-arg-fromName
+	      (format "fromName=%s&" (url-hexify-string org-tfl-jp-arg-fromName)) "")
+	  (if org-tfl-jp-arg-toName
+	      (format "toName=%s&" (url-hexify-string org-tfl-jp-arg-toName)) "")
+	  (if org-tfl-jp-arg-viaName
+	      (format "viaName=%s&" (url-hexify-string org-tfl-jp-arg-viaName)) "")
 	  (if org-tfl-jp-arg-maxTransferMinutes
 	      (format "maxTransferMinutes=%s&" org-tfl-jp-arg-maxTransferMinutes) "")
 	  (if org-tfl-jp-arg-maxWalkingMinutes
