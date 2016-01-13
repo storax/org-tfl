@@ -237,7 +237,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 
 (defun org-tfl-jp-format-leg-disruption-icon (leg)
   "Return a disruption icon if there are disruptions for the given LEG."
-  (if (equal (cdr (assoc 'isDisrupted leg)) :json-false)
+  (if (equal (org-tfl-get leg 'isDisrupted) :json-false)
       ""
     (concat org-tfl-icon-disruption " ")))
 
@@ -261,9 +261,9 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 	   (format
 	    "%s %s\n%s"
 	    (make-string ,(+ level 1) (string-to-char "*"))
-	    (cdr (assoc 'categoryDescription disruption))
-	    (org-tfl-chop (cdr (assoc 'description disruption)) ,fill-column)))
-	(cdr (assoc 'disruptions leg))
+	    (org-tfl-get disruption 'categoryDescription)
+	    (org-tfl-chop (org-tfl-get disruption 'description) ,fill-column)))
+	(org-tfl-get leg 'disruptions)
 	"\n"))))
 
 (defun org-tfl-jp-format-leg-detailed (leg level)
@@ -272,7 +272,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
    "%s %s%s%s"
    (make-string level (string-to-char "*"))
    (org-tfl-jp-format-leg-disruption-icon leg)
-   (cdr (assoc 'detailed (assoc 'instruction leg)))
+   (org-tfl-get leg 'instruction 'detailed)
    (org-tfl-jp-format-leg-disruptions leg (+ level 1))))
 
 (defun org-tfl-jp-format-leg (leg level)
@@ -280,24 +280,24 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
   (format
    "%s %3smin %s %s %s%s\n%s"
    (make-string level (string-to-char "*"))
-   (cdr (assoc 'duration leg))
-   (org-tfl-format-date (cdr (assoc 'departureTime leg)))
-   (or (cdr (assoc (cdr (assoc 'id (assoc 'mode leg))) org-tfl-mode-icons))
-       (cdr (assoc 'name (assoc 'mode leg))))
+   (org-tfl-get leg 'duration)
+   (org-tfl-format-date (org-tfl-get leg 'departureTime))
+   (or (org-tfl-get org-tfl-mode-icons (org-tfl-get leg 'mode 'id))
+       (org-tfl-get leg 'mode 'id))
    (org-tfl-jp-format-leg-disruption-icon leg)
-   (cdr (assoc 'summary (assoc 'instruction leg)))
+   (org-tfl-get leg 'instruction 'summary)
    (org-tfl-jp-format-leg-detailed leg (+ level 1))))
 
 (defun org-tfl-jp-format-journey (journey level)
   "Return a formatted string for the given JOURNEY at the given 'org-mode' LEVEL."
-  (let ((legs (cdr (assoc 'legs journey))))
+  (let ((legs (org-tfl-get journey 'legs)))
     (format
      "%s %4smin %s Departs: %s Arrives: %s\n%s"
      (make-string level (string-to-char "*"))
-     (cdr (assoc 'duration journey))
+     (org-tfl-get journey 'duration)
      (org-tfl-jp-format-mode-icons legs)
-     (org-tfl-format-date (cdr (assoc 'startDateTime journey)))
-     (org-tfl-format-date (cdr (assoc 'arrivalDateTime journey)))
+     (org-tfl-format-date (org-tfl-get journey 'startDateTime))
+     (org-tfl-format-date (org-tfl-get journey 'arrivalDateTime))
      (mapconcat `(lambda (leg) (org-tfl-jp-format-leg leg ,(+ level 1)))
 		legs
 		"\n"))))
@@ -316,7 +316,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
      "")
    (mapconcat
     `(lambda (journey) (org-tfl-jp-format-journey journey ,(+ level 1)))
-    (cdr (assoc 'journeys result)) "\n")))
+    (org-tfl-get result 'journeys) "\n")))
 
 (defun org-tfl-jp-itinerary-handler (result resulthandler)
   "Let RESULT be handled by RESULTHANDLER."
@@ -324,7 +324,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 
 (defun org-tfl-jp-itinerary-show-in-buffer (result)
   "Show itinerary RESULT."
-  (let ((journeys (cdr (assoc 'journeys result)))
+  (let ((journeys (org-tfl-get result 'journeys))
 	(level (+ (or (org-current-level) 0) 1)))
     (if (zerop (length journeys))
 	(message "No journeys found!")
@@ -339,7 +339,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 
 (defun org-tfl-jp-itinerary-insert-org (result)
   "Insert itinerary RESULT in org mode."
-  (let ((journeys (cdr (assoc 'journeys result))))
+  (let ((journeys (org-tfl-get result 'journeys)))
     (if (zerop (length journeys))
 	(message "No journeys found!")
       (let ((buf org-tfl-org-buffer)
@@ -359,28 +359,28 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 	org-tfl-jp-todis nil
 	org-tfl-jp-viadis nil
 	org-tfl-jp-fromdis
-	(or (cdr (assoc 'disambiguationOptions (assoc 'fromLocationDisambiguation result)))
-	    (eq (cdr (assoc 'matchStatus (assoc 'fromLocationDisambiguation result)))
+	(or (org-tfl-get result 'fromLocationDisambiguation 'disambiguationOptions)
+	    (eq (org-tfl-get result 'fromLocationDisambiguation 'matchStatus)
 		"identified"))
 	org-tfl-jp-todis
-	(or (cdr (assoc 'disambiguationOptions (assoc 'toLocationDisambiguation result)))
-	    (eq (cdr (assoc 'matchStatus (assoc 'toLocationDisambiguation result)))
+	(or (org-tfl-get result 'toLocationDisambiguation 'disambiguationOptions)
+	    (eq (org-tfl-get result 'toLocationDisambiguation 'matchStatus)
 		"identified"))
 	org-tfl-jp-viadis
-	(or (cdr (assoc 'disambiguationOptions (assoc 'viaLocationDisambiguation result)))
-	    (eq (cdr (assoc 'matchStatus (assoc 'viaLocationDisambiguation result)))
+	(or (org-tfl-get result 'viaLocationDisambiguation 'disambiguationOptions)
+	    (eq (org-tfl-get result 'viaLocationDisambiguation 'matchStatus)
 		"identified"))))
 
 (defun org-tfl-jp-pp-disambiguation (candidate)
   "Nice formatting for CANDIDATE."
   (let* ((place (assoc 'place candidate))
-	 (type (eval (cdr (assoc 'placeType place))))
-	 (modes (cdr (assoc 'modes place)))
-	 (commonName (cdr (assoc 'commonName place))))
+	 (type (eval (org-tfl-get place 'placeType)))
+	 (modes (org-tfl-get place 'modes))
+	 (commonName (org-tfl-get place 'commonName)))
     (cond ((equal type "StopPoint")
 	   (if modes
 	       (concat (mapconcat
-			#'(lambda (mode) (or (cdr (assoc mode org-tfl-mode-icons)) mode))
+			#'(lambda (mode) (or (org-tfl-get org-tfl-mode-icons mode) mode))
 			modes " ")
 		       " "
 		       commonName)
@@ -394,8 +394,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 
 (defun org-tfl-jp-transform-disambiguations (candidates)
   "Transform disambiguation options CANDIDATES."
-  (mapcar (lambda (cand) (cons (org-tfl-jp-pp-disambiguation cand)
-			       cand))
+  (mapcar (lambda (cand) (cons (org-tfl-jp-pp-disambiguation cand) cand))
 	  candidates))
 
 (defun org-tfl-jp-resolve-helm (cands var commonvar name resulthandler)
@@ -408,10 +407,10 @@ Afterwards 'org-tfl-jp-resolve-disambiguation' will be called with RESULTHANDLER
 	       (candidates . ,(org-tfl-jp-transform-disambiguations (eval cands)))
 	       (action . (lambda (option)
 			   (setq ,cands nil)
-			   (setq ,commonvar (cdr (assoc 'commonName (assoc 'place option))))
+			   (setq ,commonvar (org-tfl-get option 'place 'commonName))
 			   (setq ,var (format "%s,%s"
-					      (cdr (assoc 'lat (assoc 'place option)))
-					      (cdr (assoc 'lon (assoc 'place option)))))
+					      (org-tfl-get option 'place 'lat)
+					      (org-tfl-get option 'place 'lon)))
 			   (org-tfl-jp-resolve-disambiguation ',resulthandler)))))))
 
 (defun org-tfl-jp-resolve-disambiguation (resulthandler)
@@ -524,8 +523,8 @@ ARGS are ignored."
 	 (org-tfl-jp-handle-redirect (cdr status) (buffer-substring (point) (point-max))))
 	(t
 	 (let* ((result (json-read))
-		(type (cdr (assoc '$type result)))
-		(handler (cdr (assoc type org-tfl-jp-handlers))))
+		(type (org-tfl-get result '$type))
+		(handler (org-tfl-get org-tfl-jp-handlers type)))
 	   (funcall handler result resulthandler)))))
 
 (cl-defun org-tfl-jp-retrieve
