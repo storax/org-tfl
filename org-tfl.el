@@ -622,12 +622,27 @@ TIMEIS if t, DATETIME is the departing time."
 			 :date date :time time :timeIs timeis)))
 
 (cl-defun org-tfl-jp-retrieve-org (from to &rest keywords &allow-other-keys)
-  "Use 'org-tfl-jp-itinerary-org-handler' as handlefunc.
+  "Use 'org-tfl-jp-itinerary-insert-org' as handlefunc.
 
+Inserts the result in the current buffer.
 For the rest see 'org-tfl-jp-retrieve'."
   (setq org-tfl-org-buffer (current-buffer))
   (setq org-tfl-org-buffer-point (point))
   (apply 'org-tfl-jp-retrieve from to :resulthandler 'org-tfl-jp-itinerary-insert-org keywords))
+
+
+(defun org-tfl-jp-replace-link (pos desc)
+  "Replace the link description at POS with DESC."
+  (goto-char pos)
+  (let ((linkregion (org-in-regexp org-bracket-link-regexp 1))
+	(link (org-link-unescape (org-match-string-no-properties 1)))
+	(properties (org-entry-properties pos 'standard)))
+    (delete-region (car linkregion) (cdr linkregion))
+    (org-cut-subtree)
+    (org-insert-heading-respect-content)
+    (insert (format "[[%s][%s]]" link desc))
+    (dolist (prop properties)
+      (org-set-property (car prop) (cdr prop)))))
 
 ;; Example calls
 ;; (add-to-list 'load-path (file-name-directory (buffer-file-name)))
