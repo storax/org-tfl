@@ -182,29 +182,56 @@
     ("Northern line" 0 'org-tfl-northern-face prepend)
     ("Piccadilly line" 0 'org-tfl-piccadilly-face prepend)
     ("Victoria line" 0 'org-tfl-victoria-face prepend)
-    ("Waterloo and City line" 0 'org-tfl-waterloo-face prepend)))
+    ("Waterloo and City line" 0 'org-tfl-waterloo-face prepend))
+  "Mapping of lines to faces.")
+
+(defcustom org-tfl-time-format-string "%H:%M"
+  "String for 'format-time-string' to display time."
+  :type 'string
+  :group 'org-tfl)
+
+(defcustom org-tfl-datetime-format-string "%H:%M %d.%m.%Y"
+  "String for 'format-time-string' to display date and time."
+  :type 'string
+  :group 'org-tfl)
+
+(defun org-tfl-get (list &rest keys)
+  "Retrieve a value from a LIST with KEYS."
+  (let ((list list))
+    (while (and list (listp list) keys)
+      (setq list (cdr (assoc (car keys) list)))
+      (setq keys (cdr keys)))
+    (unless keys
+      list)))
+
+(defun org-tfl-date-to-time (tfldate)
+  "Convert a TFLDATE string of the TFL API to time."
+  (string-match "\\([0-9]\\{4\\}\\)-\\([0-9]\\{2\\}\\)-\\([0-9]\\{2\\}\\)T\\([0-9]\\{2\\}\\):\\([0-9]\\{2\\}\\):\\([0-9]\\{2\\}\\)" tfldate)
+  (encode-time
+   (string-to-number (match-string 6 tfldate))
+   (string-to-number (match-string 5 tfldate))
+   (string-to-number (match-string 4 tfldate))
+   (string-to-number (match-string 3 tfldate))
+   (string-to-number (match-string 2 tfldate))
+   (string-to-number (match-string 1 tfldate))))
 
 (defun org-tfl-format-date (tfldate)
-  "Format the TFLDATE string."
-  (string-match "\\([0-9]\\{4\\}\\)-\\([0-9]\\{2\\}\\)-\\([0-9]\\{2\\}\\)T\\([0-9]\\{2\\}\\):\\([0-9]\\{2\\}\\):\\([0-9]\\{2\\}\\)" tfldate)
-  (let ((time (encode-time
-	      (string-to-number (match-string 6 tfldate))
-	      (string-to-number (match-string 5 tfldate))
-	      (string-to-number (match-string 4 tfldate))
-	      (string-to-number (match-string 3 tfldate))
-	      (string-to-number (match-string 2 tfldate))
-	      (string-to-number (match-string 1 tfldate)))))
+  "Format the TFLDATE string.
+
+If it's the same day as today, 'org-tfl-time-format-string' is used.
+If the date is another day, 'org-tfl-datetime-format-string' is used."
+  (let ((time (org-tfl-date-to-time tfldate)))
     (if (zerop (- (time-to-days time)
 		  (time-to-days (current-time))))
-	(format-time-string "%H:%M" time)
-      (format-time-string "%H:%M %d.%m.%Y" time))))
+	(format-time-string org-tfl-time-format-string time)
+      (format-time-string org-tfl-datetime-format-string time))))
 
 (defun org-tfl-jp-format-mode-icons (legs)
   "Return a formatted string with the mode icons for LEGS."
   (mapconcat
    (lambda (leg)
-     (or (cdr (assoc (cdr (assoc 'id (assoc 'mode leg))) org-tfl-mode-icons))
-	 (cdr (assoc 'name (assoc 'mode leg)))))
+     (or (org-tfl-get org-tfl-mode-icons (org-tfl-get leg 'mode 'id))
+	 (org-tfl-get leg 'mode 'id)))
    legs
    " "))
 
