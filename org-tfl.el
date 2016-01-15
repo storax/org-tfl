@@ -8,6 +8,7 @@
 (require 'cl-lib)
 (require 'helm)
 (require 'org)
+(require 'org-element)
 
 (defgroup org-tfl nil
   "Org mode Transport for London."
@@ -302,17 +303,38 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 		legs
 		"\n"))))
 
-(defun org-tfl-jp-format-itinerary-result (result level)
-  "Return a nice formatted string of the given itinerary RESULT and in the given 'org mode' LEVEL."
-  (format
-   "%s Itinerary Result from %s to %s%s:\n%s"
-   (make-string level (string-to-char "*"))
-   org-tfl-jp-arg-fromName
-   org-tfl-jp-arg-toName
-   (if org-tfl-jp-arg-viaName
+(defun org-tfl-jp-format-title (result)
+  "Return a formattes string suitable for a title of a Journey Planner RESULT."
+  (let ((date (org-tfl-format-date (org-tfl-get result 'searchCriteria 'dateTime)))
+	(journey (elt (org-tfl-get result 'journeys) 0)))
+    (if journey
+      (format
+       "%3smin %s Dep.: %s Arr.: %s | %s to %s"
+       (org-tfl-get journey 'duration)
+       (org-tfl-jp-format-mode-icons (org-tfl-get journey 'legs))
+       (org-tfl-format-date (org-tfl-get journey 'startDateTime))
+       (org-tfl-format-date (org-tfl-get journey 'arrivalDateTime))
+       org-tfl-jp-arg-fromName org-tfl-jp-arg-toName)
+      (format "%s to %s (%s): No journeys found!"
+	      org-tfl-jp-arg-fromName org-tfl-jp-arg-toName date))))
+
+(defun org-tfl-jp-format-itinerary-result (result level &optional heading)
+  "Return a nice formatted string of the given itinerary RESULT.
+
+Heading in the given 'org mode' LEVEL.
+No heading if HEADING is nil."
+  (concat
+   (if heading
        (format
-	" via %s"
-	org-tfl-jp-arg-viaName)
+	"%s Itinerary Result from %s to %s%s:\n"
+	(make-string level (string-to-char "*"))
+	org-tfl-jp-arg-fromName
+	org-tfl-jp-arg-toName
+	(if org-tfl-jp-arg-viaName
+	    (format
+	     " via %s"
+	     org-tfl-jp-arg-viaName)
+	  ""))
      "")
    (mapconcat
     `(lambda (journey) (org-tfl-jp-format-journey journey ,(+ level 1)))
@@ -334,24 +356,38 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 	  (erase-buffer)
 	  (org-mode)
 	  (font-lock-add-keywords nil org-tfl-line-faces t)
-	  (insert (org-tfl-jp-format-itinerary-result result level))
+	  (insert (org-tfl-jp-format-itinerary-result result level t))
 	  (hide-sublevels (+ level 1)))))))
+
+(defun org-tfl-jp-replace-link (pos desc)
+  "Replace the link description at POS with DESC."
+  (goto-char pos)
+  (let ((linkregion (org-in-regexp org-bracket-link-regexp 1))
+	(link (org-link-unescape (org-match-string-no-properties 1)))
+	(properties (org-entry-properties pos 'standard)))
+    (delete-region (car linkregion) (cdr linkregion))
+    (org-cut-subtree)
+    (org-insert-subheading nil)
+    (org-promote-subtree)
+    (insert (format "[[%s][%s]]" link desc))
+    (dolist (prop properties)
+      (org-set-property (car prop) (cdr prop)))))
 
 (defun org-tfl-jp-itinerary-insert-org (result)
   "Insert itinerary RESULT in org mode."
   (let ((journeys (org-tfl-get result 'journeys)))
-    (if (zerop (length journeys))
-	(message "No journeys found!")
-      (let ((buf org-tfl-org-buffer)
-	    (p org-tfl-org-buffer-point))
-	(display-buffer buf)
-	(with-current-buffer buf
-	  (let ((level (+ (or (org-current-level) 0) 1)))
-	    (font-lock-add-keywords nil org-tfl-line-faces t)
-	    (goto-char p)
-	    (insert (org-tfl-jp-format-itinerary-result result level))
-	    (goto-char p)
-	    (hide-sublevels (+ level 1))))))))
+    (display-buffer org-tfl-org-buffer)
+    (with-current-buffer org-tfl-org-buffer
+      (font-lock-add-keywords nil org-tfl-line-faces t)
+      (org-tfl-jp-replace-link org-tfl-org-buffer-point (org-tfl-jp-format-title result))
+      (let ((level (+ (or (org-current-level) 0) 1))
+	    (element (org-element-at-point)))
+	(goto-char (org-element-property :contents-begin element))
+	(when (equal (org-element-type (org-element-at-point)) 'property-drawer)
+	    (goto-char (org-element-property :end (org-element-at-point))))
+	(insert (org-tfl-jp-format-itinerary-result result level nil))
+	(goto-char org-tfl-org-buffer-point)
+	(hide-sublevels level)))))
 
 (defun org-tfl-jp-get-disambiguations (result)
   "Set the disambiguation options from RESULT."
@@ -629,20 +665,6 @@ For the rest see 'org-tfl-jp-retrieve'."
   (setq org-tfl-org-buffer (current-buffer))
   (setq org-tfl-org-buffer-point (point))
   (apply 'org-tfl-jp-retrieve from to :resulthandler 'org-tfl-jp-itinerary-insert-org keywords))
-
-
-(defun org-tfl-jp-replace-link (pos desc)
-  "Replace the link description at POS with DESC."
-  (goto-char pos)
-  (let ((linkregion (org-in-regexp org-bracket-link-regexp 1))
-	(link (org-link-unescape (org-match-string-no-properties 1)))
-	(properties (org-entry-properties pos 'standard)))
-    (delete-region (car linkregion) (cdr linkregion))
-    (org-cut-subtree)
-    (org-insert-heading-respect-content)
-    (insert (format "[[%s][%s]]" link desc))
-    (dolist (prop properties)
-      (org-set-property (car prop) (cdr prop)))))
 
 ;; Example calls
 ;; (add-to-list 'load-path (file-name-directory (buffer-file-name)))
