@@ -386,6 +386,7 @@ No heading if HEADING is nil."
 	(when (equal (org-element-type (org-element-at-point)) 'property-drawer)
 	    (goto-char (org-element-property :end (org-element-at-point))))
 	(insert (org-tfl-jp-format-itinerary-result result level nil))
+	(insert "\n")
 	(goto-char org-tfl-org-buffer-point)
 	(hide-sublevels level)))))
 
