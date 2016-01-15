@@ -270,11 +270,10 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 (defun org-tfl-jp-format-leg-detailed (leg level)
   "Return a detailed formatted string for the given LEG at the given 'org-mode' LEVEL."
   (format
-   "%s %s%s%s"
-   (make-string level (string-to-char "*"))
+   "%s%s%s"
    (org-tfl-jp-format-leg-disruption-icon leg)
    (org-tfl-get leg 'instruction 'detailed)
-   (org-tfl-jp-format-leg-disruptions leg (+ level 1))))
+   (org-tfl-jp-format-leg-disruptions leg level)))
 
 (defun org-tfl-jp-format-leg (leg level)
   "Return a formatted string for the given LEG at the given 'org-mode' LEVEL."
@@ -309,7 +308,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 	(journey (elt (org-tfl-get result 'journeys) 0)))
     (if journey
       (format
-       "%3smin %s Dep.: %s Arr.: %s | %s to %s"
+       "%3smin %s %s => %s | %s to %s"
        (org-tfl-get journey 'duration)
        (org-tfl-jp-format-mode-icons (org-tfl-get journey 'legs))
        (org-tfl-format-date (org-tfl-get journey 'startDateTime))
@@ -364,7 +363,8 @@ No heading if HEADING is nil."
   (goto-char pos)
   (let ((linkregion (org-in-regexp org-bracket-link-regexp 1))
 	(link (org-link-unescape (org-match-string-no-properties 1)))
-	(properties (org-entry-properties pos 'standard)))
+	(properties (delete '("FILE") (org-entry-properties pos 'all))))
+    (setq properties (delq (assoc "ITEM" properties) properties))
     (delete-region (car linkregion) (cdr linkregion))
     (org-cut-subtree)
     (org-insert-subheading nil)
@@ -380,10 +380,12 @@ No heading if HEADING is nil."
     (with-current-buffer org-tfl-org-buffer
       (font-lock-add-keywords nil org-tfl-line-faces t)
       (org-tfl-jp-replace-link org-tfl-org-buffer-point (org-tfl-jp-format-title result))
-      (let ((level (+ (or (org-current-level) 0) 1))
+      (let ((level (or (org-current-level) 0))
 	    (element (org-element-at-point)))
 	(goto-char (org-element-property :contents-begin element))
-	(when (equal (org-element-type (org-element-at-point)) 'property-drawer)
+	(while (or (equal (org-element-type (org-element-at-point)) 'property-drawer)
+		   (equal (org-element-type (org-element-at-point)) 'drawer)
+		   (equal (org-element-type (org-element-at-point)) 'planning))
 	    (goto-char (org-element-property :end (org-element-at-point))))
 	(insert (org-tfl-jp-format-itinerary-result result level nil))
 	(insert "\n")
