@@ -417,15 +417,20 @@ No heading if HEADING is nil."
 	(when beginning
 	  (goto-char beginning)
 	  (setq element (org-element-at-point))
-	  (while (or (equal (org-element-type element) 'property-drawer)
-		     (equal (org-element-type element) 'drawer)
-		     (equal (org-element-type element) 'planning))
+	  (while (and (or (equal (org-element-type element) 'property-drawer)
+			  (equal (org-element-type element) 'drawer)
+			  (equal (org-element-type element) 'planning))
+		      (not (equal (org-element-property :end element) (point))))
 	    (when (org-element-property :end element)
 	      (goto-char (org-element-property :end element))
 	      (setq element (org-element-at-point)))))
 	(unless beginning
 	  (goto-char (org-element-property :end element)))
-	(goto-char (- (point) 2))
+	(if (or (equal (org-element-type element) 'property-drawer)
+			  (equal (org-element-type element) 'drawer)
+			  (equal (org-element-type element) 'planning))
+	    (goto-char (- (point) 1))
+	  (goto-char (- (point) 2)))
 	(insert (org-tfl-jp-format-itinerary-result result level nil))
 	(goto-char org-tfl-org-buffer-point)
 	(hide-subtree)
@@ -708,7 +713,7 @@ For the rest see 'org-tfl-jp-retrieve'."
   (setq org-tfl-org-buffer-point (point))
   (apply 'org-tfl-jp-retrieve from to :resulthandler 'org-tfl-jp-itinerary-insert-org keywords))
 
-(defun org-tfl-jp-open-org-link (path)
+(defun org-tfl-jp-open-org-link (&optional path)
   "Open a org-tfl link.  PATH is ignored.  Properties of the paragraph are used instead."
   (let* ((element (org-element-at-point))
 	 (FROM (org-element-property :FROM element))
@@ -746,6 +751,27 @@ For the rest see 'org-tfl-jp-retrieve'."
      :alternativeCycle ALTERNATIVECYCLE :alternativeWalking ALTERNATIVEWALKING)))
 
 (org-add-link-type "org-tfl" 'org-tfl-jp-open-org-link)
+
+(defun org-tfl-jp-org (from to via datetime timeIs)
+  "Plan journey FROM TO VIA at DATETIME.
+
+TIMEIS if t, DATETIME is the departing time."
+  (interactive
+   (list (read-from-minibuffer "From: " nil nil nil 'org-tfl-from-history)
+	 (read-from-minibuffer "To: " nil nil nil 'org-tfl-to-history)
+	 (read-from-minibuffer "Via: " nil nil nil 'org-tfl-via-history)
+	 (org-read-date t t)
+	 (yes-or-no-p "Time is departure time? No for arrival time:")))
+  (let ((timeis (if timeIs "Departing" "Arriving")))
+    (org-insert-subheading nil)
+    (insert "[[org-tfl:][Retrieving Information...]]")
+    (org-set-property "FROM" from)
+    (org-set-property "TO" to)
+    (unless (equal via "")
+      (org-set-property "VIA" via))
+    (org-schedule nil (format-time-string (cdr org-time-stamp-formats) datetime))
+    (org-tfl-jp-open-org-link)))
+
 
 ;; Example calls
 ;; (add-to-list 'load-path (file-name-directory (buffer-file-name)))
