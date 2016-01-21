@@ -384,12 +384,18 @@ No heading if HEADING is nil."
 	(link (org-link-unescape (org-match-string-no-properties 1)))
 	(properties (delete '("FILE") (org-entry-properties pos 'all))))
     (setq properties (delq (assoc "ITEM" properties) properties))
+    (when org-tfl-jp-arg-fromName
+	(add-to-list 'properties (cons "FROMNAME" org-tfl-jp-arg-fromName)))
+    (when org-tfl-jp-arg-toName
+      (add-to-list 'properties (cons "TONAME" org-tfl-jp-arg-toName)))
+    (when org-tfl-jp-arg-viaName
+      (add-to-list 'properties (cons "VIANAME" org-tfl-jp-arg-viaName)))
     (delete-region (car linkregion) (cdr linkregion))
     (org-cut-subtree)
     (org-insert-subheading nil)
     (org-promote-subtree)
     (insert (format "[[%s][%s]]" link desc))
-    (dolist (prop properties)
+    (dolist (prop (reverse properties))
       (org-set-property (car prop) (cdr prop)))))
 
 (defun org-tfl-jp-itinerary-insert-org (result)
