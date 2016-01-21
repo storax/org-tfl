@@ -384,6 +384,10 @@ No heading if HEADING is nil."
 	(link (org-link-unescape (org-match-string-no-properties 1)))
 	(properties (delete '("FILE") (org-entry-properties pos 'all))))
     (setq properties (delq (assoc "ITEM" properties) properties))
+    (add-to-list 'properties (cons "FROM" org-tfl-jp-arg-from))
+    (add-to-list 'properties (cons "TO" org-tfl-jp-arg-to))
+    (when org-tfl-jp-arg-via
+      (add-to-list 'properties (cons "VIA" org-tfl-jp-arg-via)))
     (when org-tfl-jp-arg-fromName
 	(add-to-list 'properties (cons "FROMNAME" org-tfl-jp-arg-fromName)))
     (when org-tfl-jp-arg-toName
@@ -412,17 +416,20 @@ No heading if HEADING is nil."
 	     (beginning (org-element-property :contents-begin element)))
 	(when beginning
 	  (goto-char beginning)
-	  (while (or (equal (org-element-type (org-element-at-point)) 'property-drawer)
-		     (equal (org-element-type (org-element-at-point)) 'drawer)
-		     (equal (org-element-type (org-element-at-point)) 'planning))
-	  (when (org-element-property :end (org-element-at-point))
-	    (goto-char (org-element-property :end (org-element-at-point))))))
+	  (setq element (org-element-at-point))
+	  (while (or (equal (org-element-type element) 'property-drawer)
+		     (equal (org-element-type element) 'drawer)
+		     (equal (org-element-type element) 'planning))
+	    (when (org-element-property :end element)
+	      (goto-char (org-element-property :end element))
+	      (setq element (org-element-at-point)))))
 	(unless beginning
 	  (goto-char (org-element-property :end element)))
 	(goto-char (- (point) 2))
 	(insert (org-tfl-jp-format-itinerary-result result level nil))
 	(goto-char org-tfl-org-buffer-point)
-	(hide-subtree)))))
+	(hide-subtree)
+	(org-cycle)))))
 
 (defun org-tfl-jp-get-disambiguations (result)
   "Set the disambiguation options from RESULT."
@@ -481,9 +488,9 @@ Afterwards 'org-tfl-jp-resolve-disambiguation' will be called with RESULTHANDLER
 	       (action . (lambda (option)
 			   (setq ,cands nil)
 			   (setq ,commonvar (org-tfl-get option 'place 'commonName))
-			   (setq ,var (format "%s,%s"
-					      (org-tfl-get option 'place 'lat)
-					      (org-tfl-get option 'place 'lon)))
+			   (setq ,var (format "lonlat:\"%s,%s\""
+					      (org-tfl-get option 'place 'lon)
+					      (org-tfl-get option 'place 'lat)))
 			   (org-tfl-jp-resolve-disambiguation ',resulthandler)))))))
 
 (defun org-tfl-jp-resolve-disambiguation (resulthandler)
@@ -700,6 +707,41 @@ For the rest see 'org-tfl-jp-retrieve'."
   (setq org-tfl-org-buffer (current-buffer))
   (setq org-tfl-org-buffer-point (point))
   (apply 'org-tfl-jp-retrieve from to :resulthandler 'org-tfl-jp-itinerary-insert-org keywords))
+
+(defun org-tfl-jp-open-org-link (path)
+  "Open a org-tfl link.  PATH is ignored.  Properties of the paragraph are used instead."
+  (let* ((element (org-element-at-point))
+	 (FROM (org-element-property :FROM element))
+	 (TO (org-element-property :TO element))
+	 (VIA (org-element-property :VIA element))
+	 (NATIONALSEARCH (org-element-property :NATIONALSEARCH element))
+	 (DATE (org-element-property :DATE element))
+	 (TIME (org-element-property :TIME element))
+	 (TIMEIS (or (org-element-property :TIMEIS element) "Departing"))
+	 (JOURNEYPREFERENCE (or (org-element-property :JOURNEYPREFERENCE element) "leasttime"))
+	 (MODE (org-element-property :MODE element))
+	 (ACCESSIBILITYPREFERENCE (org-element-property :ACCESSIBILITYPREFERENCE element))
+	 (FROMNAME (org-element-property :FROMNAME element))
+	 (TONAME (org-element-property :TONAME element))
+	 (VIANAME (org-element-property :VIANAME element))
+	 (MAXTRANSFERMINUTES (org-element-property :MAXTRANSFERMINUTE element))
+	 (MAXWALKINGMINUTES (org-element-property :MAXWALKINMINUTES element))
+	 (WALKINGSPEED (or (org-element-property :WALKINGSPEED element) "average"))
+	 (CYCLEPREFERENCE (org-element-property :CYCLEPREFERENCE element))
+	 (ADJUSTMENT (org-element-property :ADJUSTMENT element))
+	 (BIKEPROFICIENCY (org-element-property :BIKEPROFICIENCY element))
+	 (ALTERNATIVECYCLE (org-element-property :ALTERNATIVECYCLE element))
+	 (ALTERNATIVEWALKING (org-element-property :ALTERNATIVEWALKING element)))
+    (org-tfl-jp-retrieve-org
+     FROM TO :via VIA :nationalSearch NATIONALSEARCH :date DATE :time TIME
+     :timeIs TIMEIS :journeyPreference JOURNEYPREFERENCE :mode MODE
+     :accessibilityPreference ACCESSIBILITYPREFERENCE :fromName FROMNAME
+     :toName TONAME :viaName VIANAME :maxTransferMinutes MAXTRANSFERMINUTES
+     :maxWalkingMinutes MAXWALKINGMINUTES :walkingSpeed WALKINGSPEED
+     :cyclePreference CYCLEPREFERENCE :adjustment ADJUSTMENT :bikeProficiency BIKEPROFICIENCY
+     :alternativeCycle ALTERNATIVECYCLE :alternativeWalking ALTERNATIVEWALKING)))
+
+(org-add-link-type "org-tfl" 'org-tfl-jp-open-org-link)
 
 ;; Example calls
 ;; (add-to-list 'load-path (file-name-directory (buffer-file-name)))
