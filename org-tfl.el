@@ -715,8 +715,9 @@ For the rest see 'org-tfl-jp-retrieve'."
 	 (TO (org-element-property :TO element))
 	 (VIA (org-element-property :VIA element))
 	 (NATIONALSEARCH (org-element-property :NATIONALSEARCH element))
-	 (DATE (org-element-property :DATE element))
-	 (TIME (org-element-property :TIME element))
+	 (SCHEDULED (org-get-scheduled-time (point)))
+	 (DATE nil)
+	 (TIME nil)
 	 (TIMEIS (or (org-element-property :TIMEIS element) "Departing"))
 	 (JOURNEYPREFERENCE (or (org-element-property :JOURNEYPREFERENCE element) "leasttime"))
 	 (MODE (org-element-property :MODE element))
@@ -732,6 +733,9 @@ For the rest see 'org-tfl-jp-retrieve'."
 	 (BIKEPROFICIENCY (org-element-property :BIKEPROFICIENCY element))
 	 (ALTERNATIVECYCLE (org-element-property :ALTERNATIVECYCLE element))
 	 (ALTERNATIVEWALKING (org-element-property :ALTERNATIVEWALKING element)))
+    (when SCHEDULED
+      (setq DATE (format-time-string "%Y%m%d" SCHEDULED))
+      (setq TIME (format-time-string "%H%M" SCHEDULED)))
     (org-tfl-jp-retrieve-org
      FROM TO :via VIA :nationalSearch NATIONALSEARCH :date DATE :time TIME
      :timeIs TIMEIS :journeyPreference JOURNEYPREFERENCE :mode MODE
