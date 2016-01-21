@@ -394,9 +394,11 @@ No heading if HEADING is nil."
     (org-cut-subtree)
     (org-insert-subheading nil)
     (org-promote-subtree)
-    (insert (format "[[%s][%s]]" link desc))
+    (setq org-tfl-org-buffer-point (point))
+    (insert (format "[[%s][%s]]\n\n" link desc))
+    (goto-char (car linkregion))
     (dolist (prop (reverse properties))
-      (org-set-property (car prop) (cdr prop)))))
+       (org-set-property (car prop) (cdr prop)))))
 
 (defun org-tfl-jp-itinerary-insert-org (result)
   "Insert itinerary RESULT in org mode."
@@ -405,17 +407,22 @@ No heading if HEADING is nil."
     (with-current-buffer org-tfl-org-buffer
       (font-lock-add-keywords nil org-tfl-line-faces t)
       (org-tfl-jp-replace-link org-tfl-org-buffer-point (org-tfl-jp-format-title result))
-      (let ((level (or (org-current-level) 0))
-	    (element (org-element-at-point)))
-	(goto-char (org-element-property :contents-begin element))
-	(while (or (equal (org-element-type (org-element-at-point)) 'property-drawer)
-		   (equal (org-element-type (org-element-at-point)) 'drawer)
-		   (equal (org-element-type (org-element-at-point)) 'planning))
-	    (goto-char (org-element-property :end (org-element-at-point))))
+      (let* ((level (or (org-current-level) 0))
+	     (element (org-element-at-point))
+	     (beginning (org-element-property :contents-begin element)))
+	(when beginning
+	  (goto-char beginning)
+	  (while (or (equal (org-element-type (org-element-at-point)) 'property-drawer)
+		     (equal (org-element-type (org-element-at-point)) 'drawer)
+		     (equal (org-element-type (org-element-at-point)) 'planning))
+	  (when (org-element-property :end (org-element-at-point))
+	    (goto-char (org-element-property :end (org-element-at-point))))))
+	(unless beginning
+	  (goto-char (org-element-property :end element)))
+	(goto-char (- (point) 2))
 	(insert (org-tfl-jp-format-itinerary-result result level nil))
-	(insert "\n")
 	(goto-char org-tfl-org-buffer-point)
-	(hide-sublevels level)))))
+	(hide-subtree)))))
 
 (defun org-tfl-jp-get-disambiguations (result)
   "Set the disambiguation options from RESULT."
@@ -705,6 +712,7 @@ For the rest see 'org-tfl-jp-retrieve'."
 
 
 ;; FIX 300 status code for disambiguation result to set success to t
+;; Sometimes it works, sometimes url-retrieve simply does not call the callback.
 (defun url-http-parse-headers ()
  "Parse and handle HTTP specific headers.
 Return t if and only if the current buffer is still active and
