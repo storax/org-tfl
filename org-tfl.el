@@ -5,6 +5,7 @@
 ;;; Code:
 (require 'url)
 (require 'json)
+(eval-when-compile (require 'cl))
 (require 'cl-lib)
 (require 'helm)
 (require 'org)
@@ -102,6 +103,8 @@
   (org-tfl-create-icon (concat (file-name-directory load-file-name) "replacement-bus.svg")))
 (defconst org-tfl-icon-disruption
   (org-tfl-create-icon (concat (file-name-directory load-file-name) "disruption.svg")))
+(defconst org-tfl-icon-information
+  (org-tfl-create-icon (concat (file-name-directory load-file-name) "information.svg")))
 
 (defvar org-tfl-mode-icons
   (list
@@ -240,7 +243,11 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
   "Return a disruption icon if there are disruptions for the given LEG."
   (if (equal (org-tfl-get leg 'isDisrupted) :json-false)
       ""
-    (concat org-tfl-icon-disruption " ")))
+    (or
+     (loop for disruption across (org-tfl-get leg 'disruptions)
+	   unless (equal (org-tfl-get disruption 'category) "Information")
+	   return (concat org-tfl-icon-disruption " "))
+     (concat org-tfl-icon-information " "))))
 
 (defun org-tfl-chop (s len)
   "If S is longer than LEN, wrap the words with newlines."
@@ -288,14 +295,24 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
    (org-tfl-get leg 'instruction 'summary)
    (org-tfl-jp-format-leg-detailed leg (+ level 1))))
 
+(defun org-tfl-jp-format-journey-disruption-icon (legs)
+  "Return a disruption icon if there are disruptions for the given LEGS."
+  (or (loop for leg across legs
+	    if (equal-including-properties
+		(org-tfl-jp-format-leg-disruption-icon leg)
+		(concat org-tfl-icon-disruption " "))
+	    return (concat org-tfl-icon-disruption " "))
+      ""))
+
 (defun org-tfl-jp-format-journey (journey level)
   "Return a formatted string for the given JOURNEY at the given 'org-mode' LEVEL."
   (let ((legs (org-tfl-get journey 'legs)))
     (format
-     "%s %4smin %s Departs: %s Arrives: %s\n%s"
+     "%s %4smin %s %s%s => %s\n%s"
      (make-string level (string-to-char "*"))
      (org-tfl-get journey 'duration)
      (org-tfl-jp-format-mode-icons legs)
+     (org-tfl-jp-format-journey-disruption-icon legs)
      (org-tfl-format-date (org-tfl-get journey 'startDateTime))
      (org-tfl-format-date (org-tfl-get journey 'arrivalDateTime))
      (mapconcat `(lambda (leg) (org-tfl-jp-format-leg leg ,(+ level 1)))
@@ -308,9 +325,10 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 	(journey (elt (org-tfl-get result 'journeys) 0)))
     (if journey
       (format
-       "%3smin %s %s => %s | %s to %s"
+       "%3smin %s %s%s => %s | %s to %s"
        (org-tfl-get journey 'duration)
        (org-tfl-jp-format-mode-icons (org-tfl-get journey 'legs))
+       (org-tfl-jp-format-journey-disruption-icon (org-tfl-get journey 'legs))
        (org-tfl-format-date (org-tfl-get journey 'startDateTime))
        (org-tfl-format-date (org-tfl-get journey 'arrivalDateTime))
        (or org-tfl-jp-arg-fromName org-tfl-jp-arg-from)
