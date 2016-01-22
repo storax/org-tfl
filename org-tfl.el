@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;; Version: 0.2.1
+;; Version: 0.2.2
 ;; Author: storax (David Zuber), <zuber [dot] david [at] gmx [dot] de>
 ;; URL: https://github.com/storax/org-tfl
 ;; Package-Requires: ((helm "1.6.3") (org "0.16.2"))
