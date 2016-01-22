@@ -1,0 +1,380 @@
+{
+    "$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationResult, Tfl.Api.Presentation.Entities",
+    "toLocationDisambiguation": {
+	"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.Disambiguation, Tfl.Api.Presentation.Entities",
+	"disambiguationOptions": [
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "1000183",
+		"uri": "\/journey\/journeyresults\/piccadillycircus\/to\/1000183?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.StopPoint, Tfl.Api.Presentation.Entities",
+		    "naptanId": "940GZZLUPRD",
+		    "modes": [
+			"tube",
+			"bus",
+			"replacement-bus"
+		    ],
+		    "icsCode": "1000183",
+		    "stopType": "stop",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/StopPoint\/940GZZLUPRD",
+		    "commonName": "Preston (London), Preston Road",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.57205666482,
+		    "lon": -0.29547881328
+		},
+		"matchQuality": 1000
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.42078189975,-0.10537691621",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.42078189975,-0.10537691621?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Preston Road, Croydon (London)",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.420781899750004,
+		    "lon": -0.10537691620999999
+		},
+		"matchQuality": 1000
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.57395630536,-0.2943975864",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.57395630536,-0.2943975864?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Preston Road, Harrow (London)",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.57395630536,
+		    "lon": -0.29439758639999997
+		},
+		"matchQuality": 1000
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.57908072531,0.03568687425",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.57908072531,0.03568687425?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Preston Road, Redbridge (London)",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.57908072531,
+		    "lon": 0.03568687425
+		},
+		"matchQuality": 1000
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.57444350575,0.0110034782",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.57444350575,0.0110034782?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Preston Road, Redbridge (London)",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.57444350575,
+		    "lon": 0.0110034782
+		},
+		"matchQuality": 1000
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.56757778848,-0.29480944301",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.56757778848,-0.29480944301?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Preston Road, Willesden",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.56757778848,
+		    "lon": -0.29480944301
+		},
+		"matchQuality": 1000
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.61432384285,0.21966979031",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.61432384285,0.21966979031?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Preston Road, Havering-Atte-Bower",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.61432384285,
+		    "lon": 0.21966979031
+		},
+		"matchQuality": 1000
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.41752811129,-0.24705741087",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.41752811129,-0.24705741087?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Preston Road, Merton (London)",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.417528111290004,
+		    "lon": -0.24705741087
+		},
+		"matchQuality": 1000
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.56492576642,-0.29238373694",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.56492576642,-0.29238373694?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "North Wembley, Preston Road Surgery",
+		    "placeType": "PointOfInterest",
+		    "additionalProperties": [],
+		    "lat": 51.56492576642,
+		    "lon": -0.29238373693999997
+		},
+		"matchQuality": 963
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "1011178",
+		"uri": "\/journey\/journeyresults\/piccadillycircus\/to\/1011178?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.StopPoint, Tfl.Api.Presentation.Entities",
+		    "naptanId": "490G00011178",
+		    "modes": [
+			"bus"
+		    ],
+		    "icsCode": "1011178",
+		    "stopType": "stop",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/StopPoint\/490G00011178",
+		    "commonName": "North Wembley, Preston Road \/ Forty Avenue",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.5624750351,
+		    "lon": -0.29081639824
+		},
+		"matchQuality": 950
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "1014820",
+		"uri": "\/journey\/journeyresults\/piccadillycircus\/to\/1014820?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.StopPoint, Tfl.Api.Presentation.Entities",
+		    "naptanId": "490G00014820",
+		    "modes": [
+			"bus"
+		    ],
+		    "icsCode": "1014820",
+		    "stopType": "stop",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/StopPoint\/490G00014820",
+		    "commonName": "Preston (London), Woodcock Hill \/ Preston Road",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.575522202529996,
+		    "lon": -0.29448328551999997
+		},
+		"matchQuality": 949
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "1012624",
+		"uri": "\/journey\/journeyresults\/piccadillycircus\/to\/1012624?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.StopPoint, Tfl.Api.Presentation.Entities",
+		    "naptanId": "490G00012624",
+		    "modes": [
+			"bus"
+		    ],
+		    "icsCode": "1012624",
+		    "stopType": "stop",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/StopPoint\/490G00012624",
+		    "commonName": "North Wembley, St Augustine's Av Preston Road",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.56538523606,
+		    "lon": -0.29367949494
+		},
+		"matchQuality": 937
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.50424129338,-0.00763676922",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.50424129338,-0.00763676922?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Prestons Road, Stepney (London)",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.50424129338,
+		    "lon": -0.00763676922
+		},
+		"matchQuality": 937
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.37341414598,0.01394910152",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.37341414598,0.01394910152?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Prestons Road, Bromley (London)",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.37341414598,
+		    "lon": 0.01394910152
+		},
+		"matchQuality": 937
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.49937612485,-0.00921771068",
+		"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/51.49937612485,-0.00921771068?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Tower Hamlets, Barclays Cycle Hire Preston\u00ef\u00bf\u00bds Road",
+		    "placeType": "PointOfInterest",
+		    "additionalProperties": [],
+		    "lat": 51.499376124849995,
+		    "lon": -0.00921771068
+		},
+		"matchQuality": 885
+	    }
+	],
+	"matchStatus": "list"
+    },
+    "fromLocationDisambiguation": {
+	"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.Disambiguation, Tfl.Api.Presentation.Entities",
+	"disambiguationOptions": [
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "1000179",
+		"uri": "\/journey\/journeyresults\/1000179\/to\/prestonroad?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.StopPoint, Tfl.Api.Presentation.Entities",
+		    "naptanId": "940GZZLUPCC",
+		    "modes": [
+			"tube",
+			"bus"
+		    ],
+		    "icsCode": "1000179",
+		    "stopType": "stop",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/StopPoint\/940GZZLUPCC",
+		    "commonName": "Piccadilly Circus, Piccadilly Circus",
+		    "placeType": "StopPoint",
+		    "additionalProperties": [],
+		    "lat": 51.50990587838,
+		    "lon": -0.13500003041
+		},
+		"matchQuality": 1000
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.50974411811,-0.1350066363",
+		"uri": "\/journey\/journeyresults\/51.50974411811,-0.1350066363\/to\/preston%20road?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "City of Westminster, Piccadilly Circus View Point",
+		    "placeType": "PointOfInterest",
+		    "additionalProperties": [],
+		    "lat": 51.50974411811,
+		    "lon": -0.1350066363
+		},
+		"matchQuality": 960
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.51070494964,-0.13548620215",
+		"uri": "\/journey\/journeyresults\/51.51070494964,-0.13548620215\/to\/preston%20road?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "City of Westminster, Jamie's Italian, Piccadilly Circus",
+		    "placeType": "PointOfInterest",
+		    "additionalProperties": [],
+		    "lat": 51.51070494964,
+		    "lon": -0.13548620214999998
+		},
+		"matchQuality": 950
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.50880053224,-0.13222068238",
+		"uri": "\/journey\/journeyresults\/51.50880053224,-0.13222068238\/to\/preston%20road?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "City of Westminster, UGC Cinema Haymarket, Piccadilly Circus",
+		    "placeType": "PointOfInterest",
+		    "additionalProperties": [],
+		    "lat": 51.50880053224,
+		    "lon": -0.13222068238
+		},
+		"matchQuality": 945
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.51045926191,-0.13360837021",
+		"uri": "\/journey\/journeyresults\/51.51045926191,-0.13360837021\/to\/preston%20road?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "City of Westminster, UGC Cinema Shaftesbury Avenue, Piccadilly Circus",
+		    "placeType": "PointOfInterest",
+		    "additionalProperties": [],
+		    "lat": 51.51045926191,
+		    "lon": -0.13360837021
+		},
+		"matchQuality": 937
+	    },
+	    {
+		"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.DisambiguationOption, Tfl.Api.Presentation.Entities",
+		"parameterValue": "51.50987136015,-0.13452587768",
+		"uri": "\/journey\/journeyresults\/51.50987136015,-0.13452587768\/to\/preston%20road?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false",
+		"place": {
+		    "$type": "Tfl.Api.Presentation.Entities.Place, Tfl.Api.Presentation.Entities",
+		    "url": "https:\/\/api-prod6.tfl.gov.uk\/Place\/",
+		    "commonName": "Piccadilly Circus, Shaftesbury Memorial (Eros, Piccadilly Circus)",
+		    "placeType": "PointOfInterest",
+		    "additionalProperties": [],
+		    "lat": 51.50987136015,
+		    "lon": -0.13452587768000002
+		},
+		"matchQuality": 935
+	    }
+	],
+	"matchStatus": "list"
+    },
+    "viaLocationDisambiguation": {
+	"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.Disambiguation, Tfl.Api.Presentation.Entities",
+	"matchStatus": "empty"
+    },
+    "recommendedMaxAgeMinutes": 1440,
+    "searchCriteria": {
+	"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.SearchCriteria, Tfl.Api.Presentation.Entities",
+	"dateTime": "2016-01-03T00:44:00",
+	"dateTimeType": "Departing"
+    },
+    "journeyVector": {
+	"$type": "Tfl.Api.Presentation.Entities.JourneyPlanner.JourneyVector, Tfl.Api.Presentation.Entities",
+	"from": "piccadilly circus",
+	"to": "preston road",
+	"via": "",
+	"uri": "\/journey\/journeyresults\/piccadilly%20circus\/to\/preston%20road?nationalsearch=false&timeis=departing&journeypreference=leasttime&walkingspeed=average&cyclepreference=none&alternativecycle=false&alternativewalking=true&applyhtmlmarkup=false&usemultimodalcall=false"
+    }
+}
