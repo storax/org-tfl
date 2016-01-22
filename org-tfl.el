@@ -1,12 +1,84 @@
 ;;; org-tfl --- Transport for London meets Orgmode
 
+;; Copyright (C) 2015 2016 by David Zuber
+
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;; Version: 0.2.0
+;; Author: storax (David Zuber), <zuber [dot] david [at] gmx [dot] de>
+;; URL: https://github.com/storax/org-tfl
+;; Package-Requires: ((helm "1.6.3") (org "0.16.2"))
+;; Keywords: helm, org, tfl
+
 ;;; Commentary:
+
+;; Use the Transport For London API in Emacs, powered by helm and org-mode.
+
+;; Commands:
+;;
+;; Below are complete command list:
+;;
+;;  `org-tfl-jp'
+;;    Plan a journey and view the result in a buffer.
+;;  `org-tfl-jp-org'
+;;    Plan a journey and insert a subheading with a special link.
+;;    The content is the journey result.  Open the link to update it.
+;;    Use the scheduling function of org mode to change the date.
+;;    All other options are set via properties.
+;;
+;; Customizable Options:
+;;
+;; Below are customizable option list:
+;;
+;;  `org-tfl-api-id'
+;;    Your Application ID for the TfL API.  You don't need one
+;;    for personal use.  It's IP locked anyway.
+;;  `org-tfl-api-key'
+;;    Your Application KEY for the TfL API.  You don't need one
+;;    for personal use.  It's IP locked anyway.
+;;  `org-tfl-map-width'
+;;    The width in pixels of static maps.
+;;  `org-tfl-map-height'
+;;    The height in pixels of static maps.
+;;  `org-tfl-map-type'
+;;    The map type.  E.g. "roadmap", "terrain", "satellite", "hybrid".
+;;  `org-tfl-map-path-color'
+;;    The color of the path of static maps.
+;;  `org-tfl-map-path-weight'
+;;    The storke weight of paths of static maps.
+;;  `org-tfl-map-start-marker-color'
+;;    The path color of static maps.
+;;  `org-tfl-map-start-marker-color'
+;;    The start marker color of static maps.
+;;  `org-tfl-map-end-marker-color'
+;;    The end marker color of static maps.
+;;  `org-tfl-time-format-string'
+;;    The format string to display time.
+;;  `org-tfl-date-format-string'
+;;    The format string to display dates.
+
+;; Installation:
+
+;; Add the following to your Emacs init file:
+;;
+;; (require 'org-tfl)
 
 ;;; Code:
 (require 'url)
+(require 'url-http)
 (require 'json)
-(eval-when-compile (require 'cl))
-(require 'cl-lib)
+(eval-when-compile (require 'cl-lib))
 (require 'helm)
 (require 'org)
 (require 'org-element)
@@ -22,6 +94,41 @@
 
 (defcustom org-tfl-api-key nil
   "The application key for the Transport for London API."
+  :type 'string
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-width 800
+  "The width of static maps."
+  :type 'integer
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-height 800
+  "The height of static maps."
+  :type 'integer
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-type "roadmap"
+  "The type of static maps."
+  :options '("roadmap" "terrain" "satellite" "hybrid")
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-path-color "0xff0000ff"
+  "The path color of static maps."
+  :type 'string
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-path-weight 5
+"The path weight of static maps."
+  :type 'integer
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-start-marker-color "blue"
+  "The start marker color of static maps."
+  :type 'string
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-end-marker-color "red"
+  "The end marker color of static maps."
   :type 'string
   :group 'org-tfl)
 
@@ -117,7 +224,8 @@
    (cons "tube" org-tfl-icon-tube)
    (cons "walking" org-tfl-icon-walking)
    (cons "national-rail" org-tfl-icon-train)
-   (cons "train" org-tfl-icon-train))
+   (cons "tflrail" org-tfl-icon-train)
+   (cons "international-rail" org-tfl-icon-train))
   "Mapping of modes to icons.")
 
 (defface org-tfl-bakerloo-face
@@ -181,7 +289,7 @@
     ("Circle line" 0 'org-tfl-circle-face prepend)
     ("District line" 0 'org-tfl-district-face prepend)
     ("Hammersmith and City line" 0 'org-tfl-hammersmith-face prepend)
-    ("Jubliee line" 0 'org-tfl-jubliee-face prepend)
+    ("Jubilee line" 0 'org-tfl-jubliee-face prepend)
     ("Metropolitan line" 0 'org-tfl-metropolitan-face prepend)
     ("Northern line" 0 'org-tfl-northern-face prepend)
     ("Piccadilly line" 0 'org-tfl-piccadilly-face prepend)
@@ -262,24 +370,74 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
   (if (equal (cdr (assoc 'isDisrupted leg)) :json-false)
       ""
       (format
-       "\n%s Disruptions\n%s"
+       "\n%s %sDisruptions\n%s"
        (make-string level (string-to-char "*"))
+       (org-tfl-jp-format-leg-disruption-icon leg)
        (mapconcat
 	`(lambda (disruption)
 	   (format
-	    "%s %s\n%s"
+	    "%s %s%s\n%s"
 	    (make-string ,(+ level 1) (string-to-char "*"))
+	    (if (equal "Information" (org-tfl-get disruption 'categoryDescription))
+		(concat org-tfl-icon-information " ")
+	      (concat org-tfl-icon-disruption " "))
 	    (org-tfl-get disruption 'categoryDescription)
 	    (org-tfl-chop (org-tfl-get disruption 'description) ,fill-column)))
 	(org-tfl-get leg 'disruptions)
 	"\n"))))
 
+(defun org-tfl-make-maps-url (path)
+  "Create a url for the given PATH to a google maps static map."
+  (let* ((pathclean (replace-regexp-in-string
+		     "\\(\\]\\]\\|\\[\\[\\| \\)" ""
+		     path))
+	 (wplist (split-string pathclean "\\],\\[")))
+    (substring
+     (loop for start from 0 to (length wplist) by 27 concat
+	   (format
+	    "[[http:maps.google.com/maps/api/staticmap?size=%sx%s&maptype=%s&path=color:%s|weight:%s|%s&markers=label:S|color:%s|%s&markers=label:E|color:%s|%s][Map%s]] "
+	    org-tfl-map-width
+	    org-tfl-map-height
+	    org-tfl-map-type
+	    org-tfl-map-path-color
+	    org-tfl-map-path-weight
+	    (mapconcat 'identity
+		       (subseq wplist (max 0 (- start 1)) (min (+ start 26) (length wplist)))
+		       "|")
+	    org-tfl-map-start-marker-color
+	    (elt wplist (max 0 (- start 1)))
+	    org-tfl-map-end-marker-color
+	    (elt wplist (min (+ start 25) (- (length wplist) 1)))
+	    (+ (/ start 27) 1)))
+     0 -1)))
+
+(defun org-tfl-jp-format-steps (leg)
+  "Return a formatted string with a list of steps for the given LEG.
+
+The string will be prefixed with a newline character."
+  (let ((steps (org-tfl-get leg 'instruction 'steps)))
+    (concat
+     "\n"
+     (org-tfl-make-maps-url (org-tfl-get leg 'path 'lineString))
+     (if (> (length steps) 0)
+	 (concat
+	  "\n"
+	  (mapconcat
+	   `(lambda (step)
+	      (format
+	       "- %s"
+	       (org-tfl-get step 'description)))
+	   steps
+	   "\n"))
+       ""))))
+
 (defun org-tfl-jp-format-leg-detailed (leg level)
   "Return a detailed formatted string for the given LEG at the given 'org-mode' LEVEL."
   (format
-   "%s%s%s"
-   (org-tfl-jp-format-leg-disruption-icon leg)
+   "%s %s%s%s"
+   (make-string level (string-to-char "*"))
    (org-tfl-get leg 'instruction 'detailed)
+   (org-tfl-jp-format-steps leg)
    (org-tfl-jp-format-leg-disruptions leg level)))
 
 (defun org-tfl-jp-format-leg (leg level)
@@ -344,15 +502,9 @@ No heading if HEADING is nil."
   (concat
    (if heading
        (format
-	"%s Itinerary Result from %s to %s%s:\n"
+	"%s %s:\n"
 	(make-string level (string-to-char "*"))
-	org-tfl-jp-arg-fromName
-	org-tfl-jp-arg-toName
-	(if org-tfl-jp-arg-viaName
-	    (format
-	     " via %s"
-	     org-tfl-jp-arg-viaName)
-	  ""))
+	(org-tfl-jp-format-title result))
      "")
    (mapconcat
     `(lambda (journey) (org-tfl-jp-format-journey journey ,(+ level 1)))
@@ -635,7 +787,7 @@ TIME of the journey in HHmm format.
 TIMEIS does the given DATE and TIME relate to departure or arrival, e.g.
 \"Departing\" | \"Arriving\".
 JOURNEYPREFERENCE \"leastinterchange\" | \"leasttime\" | \"leastwalking\".
-MODE comma seperated list, possible options \"public-bus,overground,train,tube,coach,dlr,cablecar,tram,river,walking,cycle\".
+MODE comma seperated list, possible options \"black-cab-as-customer,black-cab-as-driver,bus,cable-car,coach,cycle,cycle-hire,dlr,electric-car,goods-vehicle-as-driver,interchange-keep-sitting,interchange-secure,international-rail,motorbike-scooter,national-rail,overground,plane,private-car,private-coach-as-customer,private-coach-as-driver,private-hire-as-customer,private-hire-as-driver,replacement-bus,river-bus,river-tour,tflrail,tram,tube,walking\".
 ACCESSIBILITYPREFERENCE comma seperated list, possible options \"noSolidStairs,noEscalators,noElevators,stepFreeToVehicle,stepFreeToPlatform\".
 FROMNAME is the location name associated with a from coordinate.
 TONAME is the location name associated with a to coordinate.
@@ -766,12 +918,16 @@ TIMEIS if t, DATETIME is the departing time."
 	 (yes-or-no-p "Time is departure time? No for arrival time:")))
   (let ((timeis (if timeIs "Departing" "Arriving")))
     (org-insert-subheading nil)
+    (org-promote)
     (insert "[[org-tfl:][Retrieving Information...]]")
     (org-set-property "FROM" from)
     (org-set-property "TO" to)
     (unless (equal via "")
       (org-set-property "VIA" via))
     (org-schedule nil (format-time-string (cdr org-time-stamp-formats) datetime))
+    (if timeIs
+	(org-set-property "TIMEIS" "Departing")
+      (org-set-property "TIMEIS" "Arriving"))
     (org-tfl-jp-open-org-link)))
 
 ;; Example google map
