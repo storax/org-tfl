@@ -1,4 +1,4 @@
-;;; org-tfl --- Transport for London meets Orgmode
+;;; org-tfl.el --- Transport for London meets Orgmode
 
 ;; Copyright (C) 2015 2016 by David Zuber
 
@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;; Version: 0.2.0
+;; Version: 0.2.1
 ;; Author: storax (David Zuber), <zuber [dot] david [at] gmx [dot] de>
 ;; URL: https://github.com/storax/org-tfl
 ;; Package-Requires: ((helm "1.6.3") (org "0.16.2"))
@@ -1327,4 +1327,4 @@ should be shown to the user."
     success))
 
 (provide 'org-tfl)
-;;; org-tfl ends here
+;;; org-tfl.el ends here
