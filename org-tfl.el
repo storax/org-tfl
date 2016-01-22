@@ -18,9 +18,63 @@
 ;; Version: 0.1.0
 ;; Author: storax (David Zuber), <zuber [dot] david [at] gmx [dot] de>
 ;; URL: https://github.com/storax/org-tfl
-;; Package-Requires: ((helm "20151224.1216") (org "0.16.2"))
+;; Package-Requires: ((helm "1.6.3") (org "0.16.2"))
+;; Keywords: helm, org, tfl
 
 ;;; Commentary:
+
+;; Use the Transport For London API in Emacs, powered by helm and org-mode.
+
+;; Commands:
+;;
+;; Below are complete command list:
+;;
+;;  `org-tfl-jp'
+;;    Plan a journey and view the result in a buffer.
+;;  `org-tfl-jp-org`
+;;    Plan a journey and insert a subheading with a special link.
+;;    The content is the journey result. Open the link to update it.
+;;    Use the scheduling function of org mode to change the date.
+;;    All other options are set via properties.
+;;
+;; Customizable Options:
+;;
+;; Below are customizable option list:
+;;
+;;  `org-tfl-api-id'
+;;    Your Application ID for the TfL API. You don't need one
+;;    for personal use. It's IP locked anyway.
+;;  `org-tfl-api-key'
+;;    Your Application KEY for the TfL API. You don't need one
+;;    for personal use. It's IP locked anyway.
+;;  `org-tfl-map-width'
+;;    The width in pixels of static maps.
+;;  `org-tfl-map-height'
+;;    The height in pixels of static maps.
+;;  `org-tfl-map-type'
+;;    The map type. E.g. "roadmap", "terrain", "satellite", "hybrid".
+;;  `org-tfl-map-path-color'
+;;    The color of the path of static maps.
+;;  `org-tfl-map-path-weight'
+;;    The storke weight of paths of static maps.
+;;  `org-tfl-map-start-marker-color'
+;;    The path color of static maps.
+;;  `org-tfl-map-start-marker-color'
+;;    The start marker color of static maps.
+;;  `org-tfl-map-end-marker-color'
+;;    The end marker color of static maps.
+;;  `org-tfl-time-format-string'
+;;    The format string to display time.
+;;  `org-tfl-date-format-string'
+;;    The format string to display dates.
+
+;; Installation:
+
+;; Add the following to your emacs init file:
+;;
+;; (require 'org-tfl)
+
+;; That's all.
 
 ;;; Code:
 (require 'url)
