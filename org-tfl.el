@@ -31,7 +31,7 @@
 ;;
 ;;  `org-tfl-jp'
 ;;    Plan a journey and view the result in a buffer.
-;;  `org-tfl-jp-org`
+;;  `org-tfl-jp-org'
 ;;    Plan a journey and insert a subheading with a special link.
 ;;    The content is the journey result. Open the link to update it.
 ;;    Use the scheduling function of org mode to change the date.
@@ -73,8 +73,6 @@
 ;; Add the following to your emacs init file:
 ;;
 ;; (require 'org-tfl)
-
-;; That's all.
 
 ;;; Code:
 (require 'url)
