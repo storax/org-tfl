@@ -10,6 +10,28 @@ This is an experimental project to use the `Transport for London (TfL) API <http
 	     The author is aware that the code is ugly, bad, dangerous
 	     and needs a lot of work.
 
+Installation
+------------
+
+It's available on `MELPA <https://melpa.org>`_.
+
+Add the following to your emacs init file::
+
+  (require 'org-tfl)
+
+Screencast
+----------
+
+.. figure:: https://raw.github.com/storax/org-tfl/master/screencast1.gif
+
+   Plan a journey and inspect the result in a buffer.
+   View maps via google static maps.
+
+.. figure:: https://raw.github.com/storax/org-tfl/master/screencast2.gif
+
+   Plan a journey and create a special link in org-mode.
+   Loading the link will refresh the result.
+
 Commands
 ---------
 
@@ -54,23 +76,3 @@ Below are customizable option list:
   The format string to display time.
 * ``org-tfl-date-format-string``
   The format string to display dates.
-
-Installation
-------------
-
-Add the following to your emacs init file::
-
-  (require 'org-tfl)
-
-Screencast
-----------
-
-.. figure:: https://raw.github.com/storax/org-tfl/master/screencast1.gif
-
-   Plan a journey and inspect the result in a buffer.
-   View maps via google static maps.
-
-.. figure:: https://raw.github.com/storax/org-tfl/master/screencast2.gif
-
-   Plan a journey and create a special link in org-mode.
-   Loading the link will refresh the result.
