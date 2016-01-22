@@ -65,12 +65,12 @@ Add the following to your emacs init file::
 Screencast
 ----------
 
-.. figure:: https://raw.github.com/storax/org-tfl/develop/screencast1.gif
+.. figure:: https://raw.github.com/storax/org-tfl/master/screencast1.gif
 
    Plan a journey and inspect the result in a buffer.
    View maps via google static maps.
 
-.. figure:: https://raw.github.com/storax/org-tfl/develop/screencast2.gif
+.. figure:: https://raw.github.com/storax/org-tfl/master/screencast2.gif
 
    Plan a journey and create a special link in org-mode.
    Loading the link will refresh the result.
