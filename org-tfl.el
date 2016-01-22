@@ -78,7 +78,7 @@
 (require 'url)
 (require 'url-http)
 (require 'json)
-(require 'cl-lib)
+(eval-when-compile (require 'cl-lib))
 (require 'helm)
 (require 'org)
 (require 'org-element)
