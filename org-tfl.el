@@ -301,11 +301,19 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 
 (defun org-tfl-make-maps-url (path)
   "Create a url for the given PATH to a google maps static map."
-  (format
-   "[[http:maps.google.com/maps/api/staticmap?size=400x400&path=color:0xff0000ff|weight:5|%s&sensor=false][Map1]]"
-   (replace-regexp-in-string
-    "\\(\\]\\|\\[\\| \\)" ""
-    (replace-regexp-in-string "\\],\\[" "|" path))))
+  (let* ((pathclean (replace-regexp-in-string
+		     "\\(\\]\\]\\|\\[\\[\\| \\)" ""
+		     path))
+	 (wplist (split-string pathclean "\\],\\[")))
+    (substring
+     (loop for start from 0 to (length wplist) by 30 concat
+	   (format
+	    "[[http:maps.google.com/maps/api/staticmap?size=800x800&path=color:0xff0000ff|weight:5|%s&sensor=false][Map%s]] "
+	    (mapconcat 'identity
+		       (subseq wplist start (min (+ start 29) (length wplist)))
+		       "|")
+	    (+ (/ start 30) 1)))
+     0 -1)))
 
 (defun org-tfl-jp-format-steps (leg)
   "Return a formatted string with a list of steps for the given LEG.
