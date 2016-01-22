@@ -33,7 +33,7 @@
 ;;    Plan a journey and view the result in a buffer.
 ;;  `org-tfl-jp-org'
 ;;    Plan a journey and insert a subheading with a special link.
-;;    The content is the journey result. Open the link to update it.
+;;    The content is the journey result.  Open the link to update it.
 ;;    Use the scheduling function of org mode to change the date.
 ;;    All other options are set via properties.
 ;;
@@ -42,17 +42,17 @@
 ;; Below are customizable option list:
 ;;
 ;;  `org-tfl-api-id'
-;;    Your Application ID for the TfL API. You don't need one
-;;    for personal use. It's IP locked anyway.
+;;    Your Application ID for the TfL API.  You don't need one
+;;    for personal use.  It's IP locked anyway.
 ;;  `org-tfl-api-key'
-;;    Your Application KEY for the TfL API. You don't need one
-;;    for personal use. It's IP locked anyway.
+;;    Your Application KEY for the TfL API.  You don't need one
+;;    for personal use.  It's IP locked anyway.
 ;;  `org-tfl-map-width'
 ;;    The width in pixels of static maps.
 ;;  `org-tfl-map-height'
 ;;    The height in pixels of static maps.
 ;;  `org-tfl-map-type'
-;;    The map type. E.g. "roadmap", "terrain", "satellite", "hybrid".
+;;    The map type.  E.g. "roadmap", "terrain", "satellite", "hybrid".
 ;;  `org-tfl-map-path-color'
 ;;    The color of the path of static maps.
 ;;  `org-tfl-map-path-weight'
@@ -70,14 +70,14 @@
 
 ;; Installation:
 
-;; Add the following to your emacs init file:
+;; Add the following to your Emacs init file:
 ;;
 ;; (require 'org-tfl)
 
 ;;; Code:
 (require 'url)
+(require 'url-http)
 (require 'json)
-(eval-when-compile (require 'cl))
 (require 'cl-lib)
 (require 'helm)
 (require 'org)
@@ -502,15 +502,9 @@ No heading if HEADING is nil."
   (concat
    (if heading
        (format
-	"%s Itinerary Result from %s to %s%s:\n"
+	"%s %s:\n"
 	(make-string level (string-to-char "*"))
-	org-tfl-jp-arg-fromName
-	org-tfl-jp-arg-toName
-	(if org-tfl-jp-arg-viaName
-	    (format
-	     " via %s"
-	     org-tfl-jp-arg-viaName)
-	  ""))
+	(org-tfl-jp-format-title result))
      "")
    (mapconcat
     `(lambda (journey) (org-tfl-jp-format-journey journey ,(+ level 1)))
