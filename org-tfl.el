@@ -45,6 +45,41 @@
   :type 'string
   :group 'org-tfl)
 
+(defcustom org-tfl-map-width 800
+  "The width of static maps."
+  :type 'integer
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-height 800
+  "The height of static maps."
+  :type 'integer
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-type "roadmap"
+  "The type of static maps."
+  :options '("roadmap" "terrain" "satellite" "hybrid")
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-path-color "0xff0000ff"
+  "The path color of static maps."
+  :type 'string
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-path-weight 5
+"The path weight of static maps."
+  :type 'integer
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-start-marker-color "blue"
+  "The start marker color of static maps."
+  :type 'string
+  :group 'org-tfl)
+
+(defcustom org-tfl-map-end-marker-color "red"
+  "The end marker color of static maps."
+  :type 'string
+  :group 'org-tfl)
+
 (defvar url-http-end-of-headers nil
   "The location in a buffer of a http response that's at the end of headers.")
 (defvar org-tfl-api-base-url "https://api.tfl.gov.uk/"
@@ -306,13 +341,22 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 		     path))
 	 (wplist (split-string pathclean "\\],\\[")))
     (substring
-     (loop for start from 0 to (length wplist) by 30 concat
+     (loop for start from 0 to (length wplist) by 27 concat
 	   (format
-	    "[[http:maps.google.com/maps/api/staticmap?size=800x800&path=color:0xff0000ff|weight:5|%s&sensor=false][Map%s]] "
+	    "[[http:maps.google.com/maps/api/staticmap?size=%sx%s&maptype=%s&path=color:%s|weight:%s|%s&markers=label:S|color:%s|%s&markers=label:E|color:%s|%s][Map%s]] "
+	    org-tfl-map-width
+	    org-tfl-map-height
+	    org-tfl-map-type
+	    org-tfl-map-path-color
+	    org-tfl-map-path-weight
 	    (mapconcat 'identity
-		       (subseq wplist start (min (+ start 29) (length wplist)))
+		       (subseq wplist (max 0 (- start 1)) (min (+ start 26) (length wplist)))
 		       "|")
-	    (+ (/ start 30) 1)))
+	    org-tfl-map-start-marker-color
+	    (elt wplist (max 0 (- start 1)))
+	    org-tfl-map-end-marker-color
+	    (elt wplist (min (+ start 25) (- (length wplist) 1)))
+	    (+ (/ start 27) 1)))
      0 -1)))
 
 (defun org-tfl-jp-format-steps (leg)
