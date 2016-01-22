@@ -1,4 +1,4 @@
-;;; org-tfl --- Transport for London meets Orgmode
+;;; org-tfl.el --- Transport for London meets Orgmode
 
 ;; Copyright (C) 2015 2016 by David Zuber
 
@@ -1327,4 +1327,4 @@ should be shown to the user."
     success))
 
 (provide 'org-tfl)
-;;; org-tfl ends here
+;;; org-tfl.el ends here
