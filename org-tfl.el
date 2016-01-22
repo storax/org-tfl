@@ -137,7 +137,8 @@
    (cons "tube" org-tfl-icon-tube)
    (cons "walking" org-tfl-icon-walking)
    (cons "national-rail" org-tfl-icon-train)
-   (cons "train" org-tfl-icon-train))
+   (cons "tflrail" org-tfl-icon-train)
+   (cons "international-rail" org-tfl-icon-train))
   "Mapping of modes to icons.")
 
 (defface org-tfl-bakerloo-face
@@ -201,7 +202,7 @@
     ("Circle line" 0 'org-tfl-circle-face prepend)
     ("District line" 0 'org-tfl-district-face prepend)
     ("Hammersmith and City line" 0 'org-tfl-hammersmith-face prepend)
-    ("Jubliee line" 0 'org-tfl-jubliee-face prepend)
+    ("Jubilee line" 0 'org-tfl-jubliee-face prepend)
     ("Metropolitan line" 0 'org-tfl-metropolitan-face prepend)
     ("Northern line" 0 'org-tfl-northern-face prepend)
     ("Piccadilly line" 0 'org-tfl-piccadilly-face prepend)
@@ -655,7 +656,7 @@ TIME of the journey in HHmm format.
 TIMEIS does the given DATE and TIME relate to departure or arrival, e.g.
 \"Departing\" | \"Arriving\".
 JOURNEYPREFERENCE \"leastinterchange\" | \"leasttime\" | \"leastwalking\".
-MODE comma seperated list, possible options \"public-bus,overground,train,tube,coach,dlr,cablecar,tram,river,walking,cycle\".
+MODE comma seperated list, possible options \"black-cab-as-customer,black-cab-as-driver,bus,cable-car,coach,cycle,cycle-hire,dlr,electric-car,goods-vehicle-as-driver,interchange-keep-sitting,interchange-secure,international-rail,motorbike-scooter,national-rail,overground,plane,private-car,private-coach-as-customer,private-coach-as-driver,private-hire-as-customer,private-hire-as-driver,replacement-bus,river-bus,river-tour,tflrail,tram,tube,walking\".
 ACCESSIBILITYPREFERENCE comma seperated list, possible options \"noSolidStairs,noEscalators,noElevators,stepFreeToVehicle,stepFreeToPlatform\".
 FROMNAME is the location name associated with a from coordinate.
 TONAME is the location name associated with a to coordinate.
