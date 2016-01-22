@@ -786,12 +786,16 @@ TIMEIS if t, DATETIME is the departing time."
 	 (yes-or-no-p "Time is departure time? No for arrival time:")))
   (let ((timeis (if timeIs "Departing" "Arriving")))
     (org-insert-subheading nil)
+    (org-promote)
     (insert "[[org-tfl:][Retrieving Information...]]")
     (org-set-property "FROM" from)
     (org-set-property "TO" to)
     (unless (equal via "")
       (org-set-property "VIA" via))
     (org-schedule nil (format-time-string (cdr org-time-stamp-formats) datetime))
+    (if timeIs
+	(org-set-property "TIMEIS" "Departing")
+      (org-set-property "TIMEIS" "Arriving"))
     (org-tfl-jp-open-org-link)))
 
 ;; Example google map
