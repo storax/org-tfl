@@ -283,24 +283,57 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
   (if (equal (cdr (assoc 'isDisrupted leg)) :json-false)
       ""
       (format
-       "\n%s Disruptions\n%s"
+       "\n%s %sDisruptions\n%s"
        (make-string level (string-to-char "*"))
+       (org-tfl-jp-format-leg-disruption-icon leg)
        (mapconcat
 	`(lambda (disruption)
 	   (format
-	    "%s %s\n%s"
+	    "%s %s%s\n%s"
 	    (make-string ,(+ level 1) (string-to-char "*"))
+	    (if (equal "Information" (org-tfl-get disruption 'categoryDescription))
+		(concat org-tfl-icon-information " ")
+	      (concat org-tfl-icon-disruption " "))
 	    (org-tfl-get disruption 'categoryDescription)
 	    (org-tfl-chop (org-tfl-get disruption 'description) ,fill-column)))
 	(org-tfl-get leg 'disruptions)
 	"\n"))))
 
+(defun org-tfl-make-maps-url (path)
+  "Create a url for the given PATH to a google maps static map."
+  (format
+   "[[http:maps.google.com/maps/api/staticmap?size=400x400&path=color:0xff0000ff|weight:5|%s&sensor=false][Map1]]"
+   (replace-regexp-in-string
+    "\\(\\]\\|\\[\\| \\)" ""
+    (replace-regexp-in-string "\\],\\[" "|" path))))
+
+(defun org-tfl-jp-format-steps (leg)
+  "Return a formatted string with a list of steps for the given LEG.
+
+The string will be prefixed with a newline character."
+  (let ((steps (org-tfl-get leg 'instruction 'steps)))
+    (concat
+     "\n"
+     (org-tfl-make-maps-url (org-tfl-get leg 'path 'lineString))
+     (if (> (length steps) 0)
+	 (concat
+	  "\n"
+	  (mapconcat
+	   `(lambda (step)
+	      (format
+	       "- %s"
+	       (org-tfl-get step 'description)))
+	   steps
+	   "\n"))
+       ""))))
+
 (defun org-tfl-jp-format-leg-detailed (leg level)
   "Return a detailed formatted string for the given LEG at the given 'org-mode' LEVEL."
   (format
-   "%s%s%s"
-   (org-tfl-jp-format-leg-disruption-icon leg)
+   "%s %s%s%s"
+   (make-string level (string-to-char "*"))
    (org-tfl-get leg 'instruction 'detailed)
+   (org-tfl-jp-format-steps leg)
    (org-tfl-jp-format-leg-disruptions leg level)))
 
 (defun org-tfl-jp-format-leg (leg level)
