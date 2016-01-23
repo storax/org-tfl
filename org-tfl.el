@@ -78,7 +78,7 @@
 (require 'url)
 (require 'url-http)
 (require 'json)
-(eval-when-compile (require 'cl-lib))
+(require 'cl-lib)
 (require 'helm)
 (require 'org)
 (require 'org-element)
@@ -352,9 +352,9 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
   (if (equal (org-tfl-get leg 'isDisrupted) :json-false)
       ""
     (or
-     (loop for disruption across (org-tfl-get leg 'disruptions)
-	   unless (equal (org-tfl-get disruption 'category) "Information")
-	   return (concat org-tfl-icon-disruption " "))
+     (cl-loop for disruption across (org-tfl-get leg 'disruptions)
+	      unless (equal (org-tfl-get disruption 'category) "Information")
+	      return (concat org-tfl-icon-disruption " "))
      (concat org-tfl-icon-information " "))))
 
 (defun org-tfl-chop (s len)
@@ -393,22 +393,22 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 		     path))
 	 (wplist (split-string pathclean "\\],\\[")))
     (substring
-     (loop for start from 0 to (length wplist) by 27 concat
-	   (format
-	    "[[http:maps.google.com/maps/api/staticmap?size=%sx%s&maptype=%s&path=color:%s|weight:%s|%s&markers=label:S|color:%s|%s&markers=label:E|color:%s|%s][Map%s]] "
-	    org-tfl-map-width
-	    org-tfl-map-height
-	    org-tfl-map-type
-	    org-tfl-map-path-color
-	    org-tfl-map-path-weight
-	    (mapconcat 'identity
-		       (subseq wplist (max 0 (- start 1)) (min (+ start 26) (length wplist)))
-		       "|")
-	    org-tfl-map-start-marker-color
-	    (elt wplist (max 0 (- start 1)))
-	    org-tfl-map-end-marker-color
-	    (elt wplist (min (+ start 25) (- (length wplist) 1)))
-	    (+ (/ start 27) 1)))
+     (cl-loop for start from 0 to (length wplist) by 27 concat
+	      (format
+	       "[[http:maps.google.com/maps/api/staticmap?size=%sx%s&maptype=%s&path=color:%s|weight:%s|%s&markers=label:S|color:%s|%s&markers=label:E|color:%s|%s][Map%s]] "
+	       org-tfl-map-width
+	       org-tfl-map-height
+	       org-tfl-map-type
+	       org-tfl-map-path-color
+	       org-tfl-map-path-weight
+	       (mapconcat 'identity
+			  (cl-subseq wplist (max 0 (- start 1)) (min (+ start 26) (length wplist)))
+			  "|")
+	       org-tfl-map-start-marker-color
+	       (elt wplist (max 0 (- start 1)))
+	       org-tfl-map-end-marker-color
+	       (elt wplist (min (+ start 25) (- (length wplist) 1)))
+	       (+ (/ start 27) 1)))
      0 -1)))
 
 (defun org-tfl-jp-format-steps (leg)
@@ -455,11 +455,11 @@ The string will be prefixed with a newline character."
 
 (defun org-tfl-jp-format-journey-disruption-icon (legs)
   "Return a disruption icon if there are disruptions for the given LEGS."
-  (or (loop for leg across legs
-	    if (equal-including-properties
-		(org-tfl-jp-format-leg-disruption-icon leg)
-		(concat org-tfl-icon-disruption " "))
-	    return (concat org-tfl-icon-disruption " "))
+  (or (cl-loop for leg across legs
+	       if (equal-including-properties
+		   (org-tfl-jp-format-leg-disruption-icon leg)
+		   (concat org-tfl-icon-disruption " "))
+	       return (concat org-tfl-icon-disruption " "))
       ""))
 
 (defun org-tfl-jp-format-journey (journey level)
