@@ -13,7 +13,7 @@ This is an experimental project to use the `Transport for London (TfL) API <http
 Installation
 ------------
 
-It's available on `MELPA <https://melpa.org>`_.
+Hopefully soon available on `MELPA <https://melpa.org>`_.
 
 Add the following to your emacs init file::
 
