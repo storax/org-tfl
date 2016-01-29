@@ -101,8 +101,13 @@ History
 
 * Remove url-http-parse-headers override
 
-0.2.3 (2016-01-22)
+0.2.3 (2016-01-25)
 +++++++++++++++++++++++++++++++++++++++
 
 * Fix cl-lib usage (thanks Soyhei YOSHIDA)
 * Revert remobal of url-http-parse-headers override
+
+0.3.0 (2016-01-29)
++++++++++++++++++++++++++++++++++++++++
+
+* Remove helm dependency and use ``completing-read``.
