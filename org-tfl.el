@@ -15,15 +15,16 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;; Version: 0.2.3
+;; Version: 0.3.0
 ;; Author: storax (David Zuber), <zuber [dot] david [at] gmx [dot] de>
 ;; URL: https://github.com/storax/org-tfl
-;; Package-Requires: ((helm "1.6.3") (org "0.16.2"))
-;; Keywords: helm, org, tfl
+;; Package-Requires: ((org "0.16.2"))
+;; Keywords: org, tfl
 
 ;;; Commentary:
 
-;; Use the Transport For London API in Emacs, powered by helm and org-mode.
+;; Use the Transport For London API in Emacs, powered by org-mode.
+;; For ambiguous results, `completing-read' is now used instead of helm.
 
 ;; Commands:
 ;;
@@ -79,7 +80,6 @@
 (require 'url-http)
 (require 'json)
 (require 'cl-lib)
-(require 'helm)
 (require 'org)
 (require 'org-element)
 
@@ -614,18 +614,18 @@ No heading if HEADING is nil."
 	 (commonName (org-tfl-get place 'commonName)))
     (cond ((equal type "StopPoint")
 	   (if modes
-	       (concat (mapconcat
+	       (concat " " (mapconcat
 			#'(lambda (mode) (or (org-tfl-get org-tfl-mode-icons mode) mode))
 			modes " ")
 		       " "
 		       commonName)
-	     commonName))
+	     (concat " " commonName)))
 	  ((equal type "PointOfInterest")
-	   (format "%s %s" org-tfl-icon-cam commonName))
+	   (format " %s %s" org-tfl-icon-cam commonName))
 	  ((equal type "Address")
-	   (format "%s %s" org-tfl-icon-location commonName))
+	   (format " %s %s" org-tfl-icon-location commonName))
 	  ('t
-	   (format "%s: %s" type commonName)))))
+	   (format " %s: %s" type commonName)))))
 
 (defun org-tfl-jp-transform-disambiguations (candidates)
   "Transform disambiguation option CANDIDATES.
@@ -634,49 +634,49 @@ Result is a list of (DISPLAY . REAL) values."
   (mapcar (lambda (cand) (cons (org-tfl-jp-pp-disambiguation cand) cand))
 	  candidates))
 
-(defun org-tfl-jp-resolve-helm (cands var commonvar name resulthandler)
+(defun org-tfl-jp-resolve-completing-read (cands var commonvar name)
   "Let the user select CANDS to set VAR and COMMONVAR.
 
-NAME for the helm section.
-Afterwards 'org-tfl-jp-resolve-disambiguation' will be called with RESULTHANDLER."
-  (helm
-   :sources `(((name . ,name)
-	       (candidates . ,(org-tfl-jp-transform-disambiguations (eval cands)))
-	       (action . (lambda (option)
-			   (setq ,cands nil)
-			   (setq ,commonvar (org-tfl-get option 'place 'commonName))
-			   (setq ,var (format "lonlat:\"%s,%s\""
-					      (org-tfl-get option 'place 'lon)
-					      (org-tfl-get option 'place 'lat)))
-			   (org-tfl-jp-resolve-disambiguation ',resulthandler)))))))
+NAME for the prompt section."
+  (let* ((candstf (org-tfl-jp-transform-disambiguations (eval cands)))
+	 (option (cdr (assoc
+		       (completing-read
+			name
+			candstf
+			nil t)
+		       candstf))))
+    (setq cands nil)
+    (set commonvar (org-tfl-get option 'place 'commonName))
+    (set var (format "lonlat:\"%s,%s\""
+		      (org-tfl-get option 'place 'lon)
+		      (org-tfl-get option 'place 'lat)))))
 
 (defun org-tfl-jp-resolve-disambiguation (resulthandler)
   "Let the user choose from the disambiguation options.
 
 If there are no options retrieve itinerary and call RESULTHANDLER."
-  (cond ((vectorp org-tfl-jp-fromdis)
-	 (org-tfl-jp-resolve-helm 'org-tfl-jp-fromdis
-				  'org-tfl-jp-arg-from
-				  'org-tfl-jp-arg-fromName
-				  (format "Select FROM location for %s." org-tfl-jp-arg-from)
-				  resulthandler))
-	((vectorp org-tfl-jp-todis)
-	 (org-tfl-jp-resolve-helm 'org-tfl-jp-todis
-				  'org-tfl-jp-arg-to
-				  'org-tfl-jp-arg-toName
-				  (format "Select TO location for %s." org-tfl-jp-arg-to)
-				  resulthandler))
-	((vectorp org-tfl-jp-viadis)
-	 (org-tfl-jp-resolve-helm 'org-tfl-jp-viadis
-				  'org-tfl-jp-arg-via
-				  'org-tfl-jp-arg-viaName
-				  (format "Select VIA location for %s." org-tfl-jp-arg-via)
-				  resulthandler))
-	(t
-	 (url-retrieve
-	  (org-tfl-jp-make-url)
-	  `(lambda (status &rest args)
-	     (apply 'org-tfl-jp-handle ',resulthandler status args))))))
+  (when (vectorp org-tfl-jp-fromdis)
+	 (org-tfl-jp-resolve-completing-read
+	  'org-tfl-jp-fromdis
+	  'org-tfl-jp-arg-from
+	  'org-tfl-jp-arg-fromName
+	  (format "Select FROM location for %s: " org-tfl-jp-arg-from)))
+  (when (vectorp org-tfl-jp-todis)
+	 (org-tfl-jp-resolve-completing-read
+	  'org-tfl-jp-todis
+	  'org-tfl-jp-arg-to
+	  'org-tfl-jp-arg-toName
+	  (format "Select TO location for %s: " org-tfl-jp-arg-to)))
+  (when (vectorp org-tfl-jp-viadis)
+	 (org-tfl-jp-resolve-completing-read
+	  'org-tfl-jp-viadis
+	  'org-tfl-jp-arg-via
+	  'org-tfl-jp-arg-viaName
+	  (format "Select VIA location for %s: " org-tfl-jp-arg-via)))
+  (url-retrieve
+   (org-tfl-jp-make-url)
+   `(lambda (status &rest args)
+      (apply 'org-tfl-jp-handle ',resulthandler status args))))
 
 (defun org-tfl-jp-disambiguation-handler (result resulthandler)
   "Resolve disambiguation of RESULT and try again with RESULTHANDLER."
@@ -930,8 +930,12 @@ TIMEIS if t, DATETIME is the departing time."
       (org-set-property "TIMEIS" "Arriving"))
     (org-tfl-jp-open-org-link)))
 
-;; FIX 300 status code for disambiguation result to set success to t
-;; Sometimes it works, sometimes url-retrieve simply does not call the callback.
+;; FIX 300 status code for disambiguation result to set success to t.
+;; If we do not do this, the TfL API will return a 300 status code and
+;; url-retrieve will get stuck in "Spinning waiting for headers", which never
+;; completes so the callback is never called.
+;; Curiously it did work at first but after an update to
+;; the most recent versions of all packages, it doesn't (or did from time to time).
 (defun url-http-parse-headers ()
  "Parse and handle HTTP specific headers.
 Return t if and only if the current buffer is still active and
