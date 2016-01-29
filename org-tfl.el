@@ -930,8 +930,12 @@ TIMEIS if t, DATETIME is the departing time."
       (org-set-property "TIMEIS" "Arriving"))
     (org-tfl-jp-open-org-link)))
 
-;; FIX 300 status code for disambiguation result to set success to t
-;; Sometimes it works, sometimes url-retrieve simply does not call the callback.
+;; FIX 300 status code for disambiguation result to set success to t.
+;; If we do not do this, the TfL API will return a 300 status code and
+;; url-retrieve will get stuck in "Spinning waiting for headers", which never
+;; completes so the callback is never called.
+;; Curiously it did work at first but after an update to
+;; the most recent versions of all packages, it doesn't (or did from time to time).
 (defun url-http-parse-headers ()
  "Parse and handle HTTP specific headers.
 Return t if and only if the current buffer is still active and
