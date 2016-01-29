@@ -2,7 +2,7 @@
 org-tfl
 =======
 
-Use the Transport For London API in Emacs, powered by helm and org-mode.
+Use the Transport For London API in Emacs, powered org-mode.
 
 This is an experimental project to use the `Transport for London (TfL) API <https://api-portal.tfl.gov.uk/docs>`_ in combination with Emacs orgmode.
 
@@ -76,3 +76,33 @@ Below are customizable option list:
   The format string to display time.
 * ``org-tfl-date-format-string``
   The format string to display dates.
+
+History
+-------
+
+0.1.0 (2016-01-22)
++++++++++++++++++++++++++++++++++++++++
+
+* Initial release
+
+0.2.0 (2016-01-22)
++++++++++++++++++++++++++++++++++++++++
+
+* Add static google maps with customization
+* Fix formatting
+
+0.2.1 (2016-01-22)
++++++++++++++++++++++++++++++++++++++++
+
+* Fix Package Header
+
+0.2.2 (2016-01-22)
++++++++++++++++++++++++++++++++++++++++
+
+* Remove url-http-parse-headers override
+
+0.2.3 (2016-01-22)
++++++++++++++++++++++++++++++++++++++++
+
+* Fix cl-lib usage (thanks Soyhei YOSHIDA)
+* Revert remobal of url-http-parse-headers override
