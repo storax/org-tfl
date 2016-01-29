@@ -614,18 +614,18 @@ No heading if HEADING is nil."
 	 (commonName (org-tfl-get place 'commonName)))
     (cond ((equal type "StopPoint")
 	   (if modes
-	       (concat (mapconcat
+	       (concat " " (mapconcat
 			#'(lambda (mode) (or (org-tfl-get org-tfl-mode-icons mode) mode))
 			modes " ")
 		       " "
 		       commonName)
-	     commonName))
+	     (concat " " commonName)))
 	  ((equal type "PointOfInterest")
-	   (format "%s %s" org-tfl-icon-cam commonName))
+	   (format " %s %s" org-tfl-icon-cam commonName))
 	  ((equal type "Address")
-	   (format "%s %s" org-tfl-icon-location commonName))
+	   (format " %s %s" org-tfl-icon-location commonName))
 	  ('t
-	   (format "%s: %s" type commonName)))))
+	   (format " %s: %s" type commonName)))))
 
 (defun org-tfl-jp-transform-disambiguations (candidates)
   "Transform disambiguation option CANDIDATES.
