@@ -6,14 +6,11 @@ Use the Transport For London API in Emacs, powered org-mode.
 
 This is an experimental project to use the `Transport for London (TfL) API <https://api-portal.tfl.gov.uk/docs>`_ in combination with Emacs orgmode.
 
-.. CAUTION:: This is a very hacky software, written by a complete lisp newbie.
-	     The author is aware that the code is ugly, bad, dangerous
-	     and needs a lot of work.
-
 Installation
 ------------
 
-Hopefully soon available on `MELPA <https://melpa.org>`_.
+org-tfl is available on `MELPA <https://melpa.org>`_.
+At the moment svg support is required!
 
 Add the following to your emacs init file::
 
