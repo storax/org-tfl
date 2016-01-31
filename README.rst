@@ -108,3 +108,8 @@ History
 +++++++++++++++++++++++++++++++++++++++
 
 * Remove helm dependency and use ``completing-read``.
+
+0.3.1 (2016-01-31)
++++++++++++++++++++++++++++++++++++++++
+
+* Fix disambiguation check with VIA parameter.
