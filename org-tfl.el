@@ -595,15 +595,15 @@ No heading if HEADING is nil."
 	org-tfl-jp-viadis nil
 	org-tfl-jp-fromdis
 	(or (org-tfl-get result 'fromLocationDisambiguation 'disambiguationOptions)
-	    (eq (org-tfl-get result 'fromLocationDisambiguation 'matchStatus)
+	    (equal (org-tfl-get result 'fromLocationDisambiguation 'matchStatus)
 		"identified"))
 	org-tfl-jp-todis
 	(or (org-tfl-get result 'toLocationDisambiguation 'disambiguationOptions)
-	    (eq (org-tfl-get result 'toLocationDisambiguation 'matchStatus)
+	    (equal (org-tfl-get result 'toLocationDisambiguation 'matchStatus)
 		"identified"))
 	org-tfl-jp-viadis
 	(or (org-tfl-get result 'viaLocationDisambiguation 'disambiguationOptions)
-	    (eq (org-tfl-get result 'viaLocationDisambiguation 'matchStatus)
+	    (equal (org-tfl-get result 'viaLocationDisambiguation 'matchStatus)
 		"identified"))))
 
 (defun org-tfl-jp-pp-disambiguation (candidate)
