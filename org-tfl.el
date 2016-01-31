@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;; Version: 0.3.0
+;; Version: 0.3.1
 ;; Author: storax (David Zuber), <zuber [dot] david [at] gmx [dot] de>
 ;; URL: https://github.com/storax/org-tfl
 ;; Package-Requires: ((org "0.16.2") (cl-lib "0.5") (emacs "24.1"))
@@ -595,15 +595,15 @@ No heading if HEADING is nil."
 	org-tfl-jp-viadis nil
 	org-tfl-jp-fromdis
 	(or (org-tfl-get result 'fromLocationDisambiguation 'disambiguationOptions)
-	    (eq (org-tfl-get result 'fromLocationDisambiguation 'matchStatus)
+	    (equal (org-tfl-get result 'fromLocationDisambiguation 'matchStatus)
 		"identified"))
 	org-tfl-jp-todis
 	(or (org-tfl-get result 'toLocationDisambiguation 'disambiguationOptions)
-	    (eq (org-tfl-get result 'toLocationDisambiguation 'matchStatus)
+	    (equal (org-tfl-get result 'toLocationDisambiguation 'matchStatus)
 		"identified"))
 	org-tfl-jp-viadis
 	(or (org-tfl-get result 'viaLocationDisambiguation 'disambiguationOptions)
-	    (eq (org-tfl-get result 'viaLocationDisambiguation 'matchStatus)
+	    (equal (org-tfl-get result 'viaLocationDisambiguation 'matchStatus)
 		"identified"))))
 
 (defun org-tfl-jp-pp-disambiguation (candidate)
