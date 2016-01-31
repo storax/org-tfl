@@ -18,7 +18,7 @@
 ;; Version: 0.3.0
 ;; Author: storax (David Zuber), <zuber [dot] david [at] gmx [dot] de>
 ;; URL: https://github.com/storax/org-tfl
-;; Package-Requires: ((org "0.16.2"))
+;; Package-Requires: ((org "0.16.2") (cl-lib "0.5") (emacs "24.1"))
 ;; Keywords: org, tfl
 
 ;;; Commentary:
