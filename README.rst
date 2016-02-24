@@ -113,3 +113,8 @@ History
 +++++++++++++++++++++++++++++++++++++++
 
 * Fix disambiguation check with VIA parameter.
+
+0.3.2 (2016-02-24)
++++++++++++++++++++++++++++++++++++++++
+
+* Use ampersand for Hammersmith & City line.
