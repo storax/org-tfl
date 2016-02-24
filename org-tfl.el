@@ -288,7 +288,7 @@
     ("Central line" 0 'org-tfl-central-face prepend)
     ("Circle line" 0 'org-tfl-circle-face prepend)
     ("District line" 0 'org-tfl-district-face prepend)
-    ("Hammersmith and City line" 0 'org-tfl-hammersmith-face prepend)
+    ("Hammersmith & City line" 0 'org-tfl-hammersmith-face prepend)
     ("Jubilee line" 0 'org-tfl-jubliee-face prepend)
     ("Metropolitan line" 0 'org-tfl-metropolitan-face prepend)
     ("Northern line" 0 'org-tfl-northern-face prepend)
