@@ -118,3 +118,8 @@ History
 +++++++++++++++++++++++++++++++++++++++
 
 * Use ampersand for Hammersmith & City line.
+
+0.3.3 (2016-04-07)
++++++++++++++++++++++++++++++++++++++++
+
+* Fix dlr icon size
