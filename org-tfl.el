@@ -395,7 +395,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
     (substring
      (cl-loop for start from 0 to (length wplist) by 27 concat
 	      (format
-	       "[[http:maps.google.com/maps/api/staticmap?size=%sx%s&maptype=%s&path=color:%s|weight:%s|%s&markers=label:S|color:%s|%s&markers=label:E|color:%s|%s][Map%s]] "
+	       "[[http://maps.google.com/maps/api/staticmap?size=%sx%s&maptype=%s&path=color:%s|weight:%s|%s&markers=label:S|color:%s|%s&markers=label:E|color:%s|%s][Map%s]] "
 	       org-tfl-map-width
 	       org-tfl-map-height
 	       org-tfl-map-type
