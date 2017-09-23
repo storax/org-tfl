@@ -118,7 +118,7 @@
   :group 'org-tfl)
 
 (defcustom org-tfl-map-path-weight 5
-"The path weight of static maps."
+  "The path weight of static maps."
   :type 'integer
   :group 'org-tfl)
 
@@ -180,10 +180,10 @@
 (cl-defun org-tfl-create-icon (path &optional (asc 80) (text "  "))
   "Return string with icon at PATH displayed with ascent ASC and TEXT."
   (propertize text 'display
-	      (create-image
-	       (with-temp-buffer
-		 (insert-file-contents path) (buffer-string))
-	       nil t :ascent asc :mask 'heuristic)))
+              (create-image
+               (with-temp-buffer
+                 (insert-file-contents path) (buffer-string))
+               nil t :ascent asc :mask 'heuristic)))
 
 ;; Icons
 (defconst org-tfl-icon-cam
@@ -334,8 +334,8 @@ If it's the same day as today, 'org-tfl-time-format-string' is used.
 If the date is another day, 'org-tfl-datetime-format-string' is used."
   (let ((time (org-tfl-date-to-time tfldate)))
     (if (zerop (- (time-to-days time)
-		  (time-to-days (current-time))))
-	(format-time-string org-tfl-time-format-string time)
+                  (time-to-days (current-time))))
+        (format-time-string org-tfl-time-format-string time)
       (format-time-string org-tfl-datetime-format-string time))))
 
 (defun org-tfl-jp-format-mode-icons (legs)
@@ -343,7 +343,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
   (mapconcat
    (lambda (leg)
      (or (org-tfl-get org-tfl-mode-icons (org-tfl-get leg 'mode 'id))
-	 (org-tfl-get leg 'mode 'id)))
+         (org-tfl-get leg 'mode 'id)))
    legs
    " "))
 
@@ -353,8 +353,8 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
       ""
     (or
      (cl-loop for disruption across (org-tfl-get leg 'disruptions)
-	      unless (equal (org-tfl-get disruption 'category) "Information")
-	      return (concat org-tfl-icon-disruption " "))
+              unless (equal (org-tfl-get disruption 'category) "Information")
+              return (concat org-tfl-icon-disruption " "))
      (concat org-tfl-icon-information " "))))
 
 (defun org-tfl-chop (s len)
@@ -369,47 +369,60 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
   "Return a formatted string with disruptions for the given LEG at 'org-mode' LEVEL."
   (if (equal (cdr (assoc 'isDisrupted leg)) :json-false)
       ""
-      (format
-       "\n%s %sDisruptions\n%s"
-       (make-string level (string-to-char "*"))
-       (org-tfl-jp-format-leg-disruption-icon leg)
-       (mapconcat
-	`(lambda (disruption)
-	   (format
-	    "%s %s%s\n%s"
-	    (make-string ,(+ level 1) (string-to-char "*"))
-	    (if (equal "Information" (org-tfl-get disruption 'categoryDescription))
-		(concat org-tfl-icon-information " ")
-	      (concat org-tfl-icon-disruption " "))
-	    (org-tfl-get disruption 'categoryDescription)
-	    (org-tfl-chop (org-tfl-get disruption 'description) ,fill-column)))
-	(org-tfl-get leg 'disruptions)
-	"\n"))))
+    (format
+     "\n%s %sDisruptions\n%s"
+     (make-string level (string-to-char "*"))
+     (org-tfl-jp-format-leg-disruption-icon leg)
+     (mapconcat
+      `(lambda (disruption)
+         (format
+          "%s %s%s\n%s"
+          (make-string ,(+ level 1) (string-to-char "*"))
+          (if (equal "Information" (org-tfl-get disruption 'categoryDescription))
+              (concat org-tfl-icon-information " ")
+            (concat org-tfl-icon-disruption " "))
+          (org-tfl-get disruption 'categoryDescription)
+          (org-tfl-chop (org-tfl-get disruption 'description) ,fill-column)))
+      (org-tfl-get leg 'disruptions)
+      "\n"))))
 
 (defun org-tfl-make-maps-url (path)
   "Create a url for the given PATH to a google maps static map."
   (let* ((pathclean (replace-regexp-in-string
-		     "\\(\\]\\]\\|\\[\\[\\| \\)" ""
-		     path))
-	 (wplist (split-string pathclean "\\],\\[")))
+                     "\\(\\]\\]\\|\\[\\[\\| \\)" ""
+                     path))
+         (wplist (split-string pathclean "\\],\\[")))
     (substring
      (cl-loop for start from 0 to (length wplist) by 27 concat
-	      (format
-	       "[[http://maps.google.com/maps/api/staticmap?size=%sx%s&maptype=%s&path=color:%s|weight:%s|%s&markers=label:S|color:%s|%s&markers=label:E|color:%s|%s][Map%s]] "
-	       org-tfl-map-width
-	       org-tfl-map-height
-	       org-tfl-map-type
-	       org-tfl-map-path-color
-	       org-tfl-map-path-weight
-	       (mapconcat 'identity
-			  (cl-subseq wplist (max 0 (- start 1)) (min (+ start 26) (length wplist)))
-			  "|")
-	       org-tfl-map-start-marker-color
-	       (elt wplist (max 0 (- start 1)))
-	       org-tfl-map-end-marker-color
-	       (elt wplist (min (+ start 25) (- (length wplist) 1)))
-	       (+ (/ start 27) 1)))
+              (format
+               "[[org-tfl-map:http://maps.google.com/maps/api/staticmap?size=%sx%s&maptype=%s&path=color:%s|weight:%s|%s&markers=label:S|color:%s|%s&markers=label:E|color:%s|%s][Map%s]]\n"
+               org-tfl-map-width
+               org-tfl-map-height
+               org-tfl-map-type
+               org-tfl-map-path-color
+               org-tfl-map-path-weight
+               (mapconcat 'identity
+                          (cl-subseq wplist (max 0 (- start 1)) (min (+ start 26) (length wplist)))
+                          "|")
+               org-tfl-map-start-marker-color
+               (elt wplist (max 0 (- start 1)))
+               org-tfl-map-end-marker-color
+               (elt wplist (min (+ start 25) (- (length wplist) 1)))
+               (+ (/ start 27) 1)))
      0 -1)))
+
+(defun org-tfl-open-map-link (path)
+  "Show the map in the buffer."
+  (let* ((link (save-match-data (org-element-context)))
+         (start (org-element-property :begin link))
+         (end (org-element-property :end link))
+         (name (concat temporary-file-directory (make-temp-name "orgtflmap") ".png")))
+    (url-copy-file path name)
+    (delete-region start end)
+    (insert (format "[[file:%s]]" name))
+    (org-display-inline-images nil t start (+ end 9))))
+
+(org-add-link-type "org-tfl-map" 'org-tfl-open-map-link)
 
 (defun org-tfl-jp-format-steps (leg)
   "Return a formatted string with a list of steps for the given LEG.
@@ -420,15 +433,15 @@ The string will be prefixed with a newline character."
      "\n"
      (org-tfl-make-maps-url (org-tfl-get leg 'path 'lineString))
      (if (> (length steps) 0)
-	 (concat
-	  "\n"
-	  (mapconcat
-	   `(lambda (step)
-	      (format
-	       "- %s"
-	       (org-tfl-get step 'description)))
-	   steps
-	   "\n"))
+         (concat
+          "\n"
+          (mapconcat
+           `(lambda (step)
+              (format
+               "- %s"
+               (org-tfl-get step 'description)))
+           steps
+           "\n"))
        ""))))
 
 (defun org-tfl-jp-format-leg-detailed (leg level)
@@ -456,10 +469,10 @@ The string will be prefixed with a newline character."
 (defun org-tfl-jp-format-journey-disruption-icon (legs)
   "Return a disruption icon if there are disruptions for the given LEGS."
   (or (cl-loop for leg across legs
-	       if (equal-including-properties
-		   (org-tfl-jp-format-leg-disruption-icon leg)
-		   (concat org-tfl-icon-disruption " "))
-	       return (concat org-tfl-icon-disruption " "))
+               if (equal-including-properties
+                   (org-tfl-jp-format-leg-disruption-icon leg)
+                   (concat org-tfl-icon-disruption " "))
+               return (concat org-tfl-icon-disruption " "))
       ""))
 
 (defun org-tfl-jp-format-journey (journey level)
@@ -474,25 +487,25 @@ The string will be prefixed with a newline character."
      (org-tfl-format-date (org-tfl-get journey 'startDateTime))
      (org-tfl-format-date (org-tfl-get journey 'arrivalDateTime))
      (mapconcat `(lambda (leg) (org-tfl-jp-format-leg leg ,(+ level 1)))
-		legs
-		"\n"))))
+                legs
+                "\n"))))
 
 (defun org-tfl-jp-format-title (result)
   "Return a formattes string suitable for a title of a Journey Planner RESULT."
   (let ((date (org-tfl-format-date (org-tfl-get result 'searchCriteria 'dateTime)))
-	(journey (elt (org-tfl-get result 'journeys) 0)))
+        (journey (elt (org-tfl-get result 'journeys) 0)))
     (if journey
-      (format
-       "%3smin %s %s%s => %s | %s to %s"
-       (org-tfl-get journey 'duration)
-       (org-tfl-jp-format-mode-icons (org-tfl-get journey 'legs))
-       (org-tfl-jp-format-journey-disruption-icon (org-tfl-get journey 'legs))
-       (org-tfl-format-date (org-tfl-get journey 'startDateTime))
-       (org-tfl-format-date (org-tfl-get journey 'arrivalDateTime))
-       (or org-tfl-jp-arg-fromName org-tfl-jp-arg-from)
-       (or org-tfl-jp-arg-toName org-tfl-jp-arg-to))
+        (format
+         "%3smin %s %s%s => %s | %s to %s"
+         (org-tfl-get journey 'duration)
+         (org-tfl-jp-format-mode-icons (org-tfl-get journey 'legs))
+         (org-tfl-jp-format-journey-disruption-icon (org-tfl-get journey 'legs))
+         (org-tfl-format-date (org-tfl-get journey 'startDateTime))
+         (org-tfl-format-date (org-tfl-get journey 'arrivalDateTime))
+         (or org-tfl-jp-arg-fromName org-tfl-jp-arg-from)
+         (or org-tfl-jp-arg-toName org-tfl-jp-arg-to))
       (format "%s to %s (%s): No journeys found!"
-	      org-tfl-jp-arg-fromName org-tfl-jp-arg-toName date))))
+              org-tfl-jp-arg-fromName org-tfl-jp-arg-toName date))))
 
 (defun org-tfl-jp-format-itinerary-result (result level &optional heading)
   "Return a nice formatted string of the given itinerary RESULT.
@@ -502,9 +515,9 @@ No heading if HEADING is nil."
   (concat
    (if heading
        (format
-	"%s %s:\n"
-	(make-string level (string-to-char "*"))
-	(org-tfl-jp-format-title result))
+        "%s %s:\n"
+        (make-string level (string-to-char "*"))
+        (org-tfl-jp-format-title result))
      "")
    (mapconcat
     `(lambda (journey) (org-tfl-jp-format-journey journey ,(+ level 1)))
@@ -517,31 +530,31 @@ No heading if HEADING is nil."
 (defun org-tfl-jp-itinerary-show-in-buffer (result)
   "Show itinerary RESULT."
   (let ((journeys (org-tfl-get result 'journeys))
-	(level (+ (or (org-current-level) 0) 1)))
+        (level (+ (or (org-current-level) 0) 1)))
     (if (zerop (length journeys))
-	(message "No journeys found!")
+        (message "No journeys found!")
       (let ((buf (get-buffer-create "Itinerary Results")))
-	(display-buffer buf)
-	(with-current-buffer buf
-	  (erase-buffer)
-	  (org-mode)
-	  (font-lock-add-keywords nil org-tfl-line-faces t)
-	  (insert (org-tfl-jp-format-itinerary-result result level t))
-	  (hide-sublevels (+ level 1)))))))
+        (display-buffer buf)
+        (with-current-buffer buf
+          (erase-buffer)
+          (org-mode)
+          (font-lock-add-keywords nil org-tfl-line-faces t)
+          (insert (org-tfl-jp-format-itinerary-result result level t))
+          (hide-sublevels (+ level 1)))))))
 
 (defun org-tfl-jp-replace-link (pos desc)
   "Replace the link description at POS with DESC."
   (goto-char pos)
   (let ((linkregion (org-in-regexp org-bracket-link-regexp 1))
-	(link (org-link-unescape (org-match-string-no-properties 1)))
-	(properties (delete '("FILE") (org-entry-properties pos 'all))))
+        (link (org-link-unescape (org-match-string-no-properties 1)))
+        (properties (delete '("FILE") (org-entry-properties pos 'all))))
     (setq properties (delq (assoc "ITEM" properties) properties))
     (add-to-list 'properties (cons "FROM" org-tfl-jp-arg-from))
     (add-to-list 'properties (cons "TO" org-tfl-jp-arg-to))
     (when org-tfl-jp-arg-via
       (add-to-list 'properties (cons "VIA" org-tfl-jp-arg-via)))
     (when org-tfl-jp-arg-fromName
-	(add-to-list 'properties (cons "FROMNAME" org-tfl-jp-arg-fromName)))
+      (add-to-list 'properties (cons "FROMNAME" org-tfl-jp-arg-fromName)))
     (when org-tfl-jp-arg-toName
       (add-to-list 'properties (cons "TONAME" org-tfl-jp-arg-toName)))
     (when org-tfl-jp-arg-viaName
@@ -554,7 +567,7 @@ No heading if HEADING is nil."
     (insert (format "[[%s][%s]]\n\n" link desc))
     (goto-char (car linkregion))
     (dolist (prop (reverse properties))
-       (org-set-property (car prop) (cdr prop)))))
+      (org-set-property (car prop) (cdr prop)))))
 
 (defun org-tfl-jp-itinerary-insert-org (result)
   "Insert itinerary RESULT in org mode."
@@ -564,115 +577,115 @@ No heading if HEADING is nil."
       (font-lock-add-keywords nil org-tfl-line-faces t)
       (org-tfl-jp-replace-link org-tfl-org-buffer-point (org-tfl-jp-format-title result))
       (let* ((level (or (org-current-level) 0))
-	     (element (org-element-at-point))
-	     (beginning (org-element-property :contents-begin element)))
-	(when beginning
-	  (goto-char beginning)
-	  (setq element (org-element-at-point))
-	  (while (and (or (equal (org-element-type element) 'property-drawer)
-			  (equal (org-element-type element) 'drawer)
-			  (equal (org-element-type element) 'planning))
-		      (not (equal (org-element-property :end element) (point))))
-	    (when (org-element-property :end element)
-	      (goto-char (org-element-property :end element))
-	      (setq element (org-element-at-point)))))
-	(unless beginning
-	  (goto-char (org-element-property :end element)))
-	(if (or (equal (org-element-type element) 'property-drawer)
-			  (equal (org-element-type element) 'drawer)
-			  (equal (org-element-type element) 'planning))
-	    (goto-char (- (point) 1))
-	  (goto-char (- (point) 2)))
-	(insert (org-tfl-jp-format-itinerary-result result level nil))
-	(goto-char org-tfl-org-buffer-point)
-	(hide-subtree)
-	(org-cycle)))))
+             (element (org-element-at-point))
+             (beginning (org-element-property :contents-begin element)))
+        (when beginning
+          (goto-char beginning)
+          (setq element (org-element-at-point))
+          (while (and (or (equal (org-element-type element) 'property-drawer)
+                          (equal (org-element-type element) 'drawer)
+                          (equal (org-element-type element) 'planning))
+                      (not (equal (org-element-property :end element) (point))))
+            (when (org-element-property :end element)
+              (goto-char (org-element-property :end element))
+              (setq element (org-element-at-point)))))
+        (unless beginning
+          (goto-char (org-element-property :end element)))
+        (if (or (equal (org-element-type element) 'property-drawer)
+                (equal (org-element-type element) 'drawer)
+                (equal (org-element-type element) 'planning))
+            (goto-char (- (point) 1))
+          (goto-char (- (point) 2)))
+        (insert (org-tfl-jp-format-itinerary-result result level nil))
+        (goto-char org-tfl-org-buffer-point)
+        (hide-subtree)
+        (org-cycle)))))
 
 (defun org-tfl-jp-get-disambiguations (result)
   "Set the disambiguation options from RESULT."
   (setq org-tfl-jp-fromdis nil
-	org-tfl-jp-todis nil
-	org-tfl-jp-viadis nil
-	org-tfl-jp-fromdis
-	(or (org-tfl-get result 'fromLocationDisambiguation 'disambiguationOptions)
-	    (equal (org-tfl-get result 'fromLocationDisambiguation 'matchStatus)
-		"identified"))
-	org-tfl-jp-todis
-	(or (org-tfl-get result 'toLocationDisambiguation 'disambiguationOptions)
-	    (equal (org-tfl-get result 'toLocationDisambiguation 'matchStatus)
-		"identified"))
-	org-tfl-jp-viadis
-	(or (org-tfl-get result 'viaLocationDisambiguation 'disambiguationOptions)
-	    (equal (org-tfl-get result 'viaLocationDisambiguation 'matchStatus)
-		"identified"))))
+        org-tfl-jp-todis nil
+        org-tfl-jp-viadis nil
+        org-tfl-jp-fromdis
+        (or (org-tfl-get result 'fromLocationDisambiguation 'disambiguationOptions)
+            (equal (org-tfl-get result 'fromLocationDisambiguation 'matchStatus)
+                   "identified"))
+        org-tfl-jp-todis
+        (or (org-tfl-get result 'toLocationDisambiguation 'disambiguationOptions)
+            (equal (org-tfl-get result 'toLocationDisambiguation 'matchStatus)
+                   "identified"))
+        org-tfl-jp-viadis
+        (or (org-tfl-get result 'viaLocationDisambiguation 'disambiguationOptions)
+            (equal (org-tfl-get result 'viaLocationDisambiguation 'matchStatus)
+                   "identified"))))
 
 (defun org-tfl-jp-pp-disambiguation (candidate)
   "Nice formatting for disambiguation CANDIDATE."
   (let* ((place (assoc 'place candidate))
-	 (type (eval (org-tfl-get place 'placeType)))
-	 (modes (org-tfl-get place 'modes))
-	 (commonName (org-tfl-get place 'commonName)))
+         (type (eval (org-tfl-get place 'placeType)))
+         (modes (org-tfl-get place 'modes))
+         (commonName (org-tfl-get place 'commonName)))
     (cond ((equal type "StopPoint")
-	   (if modes
-	       (concat " " (mapconcat
-			#'(lambda (mode) (or (org-tfl-get org-tfl-mode-icons mode) mode))
-			modes " ")
-		       " "
-		       commonName)
-	     (concat " " commonName)))
-	  ((equal type "PointOfInterest")
-	   (format " %s %s" org-tfl-icon-cam commonName))
-	  ((equal type "Address")
-	   (format " %s %s" org-tfl-icon-location commonName))
-	  ('t
-	   (format " %s: %s" type commonName)))))
+           (if modes
+               (concat " " (mapconcat
+                            #'(lambda (mode) (or (org-tfl-get org-tfl-mode-icons mode) mode))
+                            modes " ")
+                       " "
+                       commonName)
+             (concat " " commonName)))
+          ((equal type "PointOfInterest")
+           (format " %s %s" org-tfl-icon-cam commonName))
+          ((equal type "Address")
+           (format " %s %s" org-tfl-icon-location commonName))
+          ('t
+           (format " %s: %s" type commonName)))))
 
 (defun org-tfl-jp-transform-disambiguations (candidates)
   "Transform disambiguation option CANDIDATES.
 
 Result is a list of (DISPLAY . REAL) values."
   (mapcar (lambda (cand) (cons (org-tfl-jp-pp-disambiguation cand) cand))
-	  candidates))
+          candidates))
 
 (defun org-tfl-jp-resolve-completing-read (cands var commonvar name)
   "Let the user select CANDS to set VAR and COMMONVAR.
 
 NAME for the prompt section."
   (let* ((candstf (org-tfl-jp-transform-disambiguations (eval cands)))
-	 (option (cdr (assoc
-		       (completing-read
-			name
-			candstf
-			nil t)
-		       candstf))))
+         (option (cdr (assoc
+                       (completing-read
+                        name
+                        candstf
+                        nil t)
+                       candstf))))
     (setq cands nil)
     (set commonvar (org-tfl-get option 'place 'commonName))
     (set var (format "lonlat:\"%s,%s\""
-		      (org-tfl-get option 'place 'lon)
-		      (org-tfl-get option 'place 'lat)))))
+                     (org-tfl-get option 'place 'lon)
+                     (org-tfl-get option 'place 'lat)))))
 
 (defun org-tfl-jp-resolve-disambiguation (resulthandler)
   "Let the user choose from the disambiguation options.
 
 If there are no options retrieve itinerary and call RESULTHANDLER."
   (when (vectorp org-tfl-jp-fromdis)
-	 (org-tfl-jp-resolve-completing-read
-	  'org-tfl-jp-fromdis
-	  'org-tfl-jp-arg-from
-	  'org-tfl-jp-arg-fromName
-	  (format "Select FROM location for %s: " org-tfl-jp-arg-from)))
+    (org-tfl-jp-resolve-completing-read
+     'org-tfl-jp-fromdis
+     'org-tfl-jp-arg-from
+     'org-tfl-jp-arg-fromName
+     (format "Select FROM location for %s: " org-tfl-jp-arg-from)))
   (when (vectorp org-tfl-jp-todis)
-	 (org-tfl-jp-resolve-completing-read
-	  'org-tfl-jp-todis
-	  'org-tfl-jp-arg-to
-	  'org-tfl-jp-arg-toName
-	  (format "Select TO location for %s: " org-tfl-jp-arg-to)))
+    (org-tfl-jp-resolve-completing-read
+     'org-tfl-jp-todis
+     'org-tfl-jp-arg-to
+     'org-tfl-jp-arg-toName
+     (format "Select TO location for %s: " org-tfl-jp-arg-to)))
   (when (vectorp org-tfl-jp-viadis)
-	 (org-tfl-jp-resolve-completing-read
-	  'org-tfl-jp-viadis
-	  'org-tfl-jp-arg-via
-	  'org-tfl-jp-arg-viaName
-	  (format "Select VIA location for %s: " org-tfl-jp-arg-via)))
+    (org-tfl-jp-resolve-completing-read
+     'org-tfl-jp-viadis
+     'org-tfl-jp-arg-via
+     'org-tfl-jp-arg-viaName
+     (format "Select VIA location for %s: " org-tfl-jp-arg-via)))
   (url-retrieve
    (org-tfl-jp-make-url)
    `(lambda (status &rest args)
@@ -684,7 +697,7 @@ If there are no options retrieve itinerary and call RESULTHANDLER."
   (if (and org-tfl-jp-fromdis org-tfl-jp-todis)
       (org-tfl-jp-resolve-disambiguation resulthandler)
     (if org-tfl-jp-fromdis
-	(message "Cannot resolve To Location: %s" org-tfl-jp-arg-to)
+        (message "Cannot resolve To Location: %s" org-tfl-jp-arg-to)
       (message "Cannot resolve From Location: %s" org-tfl-jp-arg-from))))
 
 (defvar org-tfl-jp-handlers
@@ -700,47 +713,47 @@ For keys see 'org-tfl-jp-retrieve'."
   (replace-regexp-in-string
    "&+$" ""
    (concat org-tfl-api-base-url
-	   (format org-tfl-api-jp
-		   (url-hexify-string org-tfl-jp-arg-from)
-		   (url-hexify-string org-tfl-jp-arg-to))
-	  "?"
-	  (if (and org-tfl-api-jp org-tfl-api-key)
-	      (format "app_id=%s&app_key=%s&" (or org-tfl-api-id "") (or org-tfl-api-key ""))
-	    "")
-	  (if org-tfl-jp-arg-via (format "via=%s&" (url-hexify-string org-tfl-jp-arg-via)) "")
-	  (if org-tfl-jp-arg-nationalSearch
-	      (format "nationalSearch=%s&" org-tfl-jp-arg-nationalSearch) "")
-	  (if org-tfl-jp-arg-date (format "date=%s&" org-tfl-jp-arg-date) "")
-	  (if org-tfl-jp-arg-time (format "time=%s&" org-tfl-jp-arg-time) "")
-	  (format "timeIs=%s&" org-tfl-jp-arg-timeIs)
-	  (format "journeyPreference=%s&" org-tfl-jp-arg-journeyPreference)
-	  (if org-tfl-jp-arg-mode (format "mode=%s&" org-tfl-jp-arg-mode) "")
-	  (if org-tfl-jp-arg-accessibilityPreference (format "accessibilityPreference=%s&"
-					      org-tfl-jp-arg-accessibilityPreference) "")
-	  (if org-tfl-jp-arg-fromName
-	      (format "fromName=%s&" (url-hexify-string org-tfl-jp-arg-fromName)) "")
-	  (if org-tfl-jp-arg-toName
-	      (format "toName=%s&" (url-hexify-string org-tfl-jp-arg-toName)) "")
-	  (if org-tfl-jp-arg-viaName
-	      (format "viaName=%s&" (url-hexify-string org-tfl-jp-arg-viaName)) "")
-	  (if org-tfl-jp-arg-maxTransferMinutes
-	      (format "maxTransferMinutes=%s&" org-tfl-jp-arg-maxTransferMinutes) "")
-	  (if org-tfl-jp-arg-maxWalkingMinutes
-	      (format "maxWalkingMinutes=%s&" org-tfl-jp-arg-maxWalkingMinutes) "")
-	  (format "average=%s&" org-tfl-jp-arg-walkingSpeed)
-	  (if org-tfl-jp-arg-cyclePreference
-	      (format "cyclePreference=%s&" org-tfl-jp-arg-cyclePreference) "")
-	  (if org-tfl-jp-arg-adjustment (format "adjustment=%s&" org-tfl-jp-arg-adjustment) "")
-	  (if org-tfl-jp-arg-bikeProficiency
-	      (format "bikeProficiency=%s&" org-tfl-jp-arg-bikeProficiency) "")
-	  (if org-tfl-jp-arg-alternativeCycle
-	      (format "alternativeCycle=%s&" org-tfl-jp-arg-alternativeCycle) "")
-	  (if org-tfl-jp-arg-alternativeWalking
-	      (format "alternativeWalking=%s&" org-tfl-jp-arg-alternativeWalking) "")
-	  (if org-tfl-jp-arg-applyHtmlMarkup
-	      (format "applyHtmlMarkup=%s&" org-tfl-jp-arg-applyHtmlMarkup) "")
-	  (if org-tfl-jp-arg-useMultiModalCall
-	      (format "useMultiModalCall=%s&" org-tfl-jp-arg-useMultiModalCall) ""))))
+           (format org-tfl-api-jp
+                   (url-hexify-string org-tfl-jp-arg-from)
+                   (url-hexify-string org-tfl-jp-arg-to))
+           "?"
+           (if (and org-tfl-api-jp org-tfl-api-key)
+               (format "app_id=%s&app_key=%s&" (or org-tfl-api-id "") (or org-tfl-api-key ""))
+             "")
+           (if org-tfl-jp-arg-via (format "via=%s&" (url-hexify-string org-tfl-jp-arg-via)) "")
+           (if org-tfl-jp-arg-nationalSearch
+               (format "nationalSearch=%s&" org-tfl-jp-arg-nationalSearch) "")
+           (if org-tfl-jp-arg-date (format "date=%s&" org-tfl-jp-arg-date) "")
+           (if org-tfl-jp-arg-time (format "time=%s&" org-tfl-jp-arg-time) "")
+           (format "timeIs=%s&" org-tfl-jp-arg-timeIs)
+           (format "journeyPreference=%s&" org-tfl-jp-arg-journeyPreference)
+           (if org-tfl-jp-arg-mode (format "mode=%s&" org-tfl-jp-arg-mode) "")
+           (if org-tfl-jp-arg-accessibilityPreference (format "accessibilityPreference=%s&"
+                                                              org-tfl-jp-arg-accessibilityPreference) "")
+           (if org-tfl-jp-arg-fromName
+               (format "fromName=%s&" (url-hexify-string org-tfl-jp-arg-fromName)) "")
+           (if org-tfl-jp-arg-toName
+               (format "toName=%s&" (url-hexify-string org-tfl-jp-arg-toName)) "")
+           (if org-tfl-jp-arg-viaName
+               (format "viaName=%s&" (url-hexify-string org-tfl-jp-arg-viaName)) "")
+           (if org-tfl-jp-arg-maxTransferMinutes
+               (format "maxTransferMinutes=%s&" org-tfl-jp-arg-maxTransferMinutes) "")
+           (if org-tfl-jp-arg-maxWalkingMinutes
+               (format "maxWalkingMinutes=%s&" org-tfl-jp-arg-maxWalkingMinutes) "")
+           (format "average=%s&" org-tfl-jp-arg-walkingSpeed)
+           (if org-tfl-jp-arg-cyclePreference
+               (format "cyclePreference=%s&" org-tfl-jp-arg-cyclePreference) "")
+           (if org-tfl-jp-arg-adjustment (format "adjustment=%s&" org-tfl-jp-arg-adjustment) "")
+           (if org-tfl-jp-arg-bikeProficiency
+               (format "bikeProficiency=%s&" org-tfl-jp-arg-bikeProficiency) "")
+           (if org-tfl-jp-arg-alternativeCycle
+               (format "alternativeCycle=%s&" org-tfl-jp-arg-alternativeCycle) "")
+           (if org-tfl-jp-arg-alternativeWalking
+               (format "alternativeWalking=%s&" org-tfl-jp-arg-alternativeWalking) "")
+           (if org-tfl-jp-arg-applyHtmlMarkup
+               (format "applyHtmlMarkup=%s&" org-tfl-jp-arg-applyHtmlMarkup) "")
+           (if org-tfl-jp-arg-useMultiModalCall
+               (format "useMultiModalCall=%s&" org-tfl-jp-arg-useMultiModalCall) ""))))
 
 (defun org-tfl-jp-handle-error (data response)
   "Handle errors with DATA and RESPONSE."
@@ -758,24 +771,24 @@ If status is not successful other handlers are called STATUS.
 ARGS are ignored."
   (goto-char url-http-end-of-headers)
   (cond ((eq (car status) :error)
-	 (org-tfl-jp-handle-error (cdr status) (buffer-substring (point) (point-max))))
-	((eq (car status) :redirect)
-	 (org-tfl-jp-handle-redirect (cdr status) (buffer-substring (point) (point-max))))
-	(t
-	 (let* ((result (json-read))
-		(type (org-tfl-get result '$type))
-		(handler (org-tfl-get org-tfl-jp-handlers type)))
-	   (funcall handler result resulthandler)))))
+         (org-tfl-jp-handle-error (cdr status) (buffer-substring (point) (point-max))))
+        ((eq (car status) :redirect)
+         (org-tfl-jp-handle-redirect (cdr status) (buffer-substring (point) (point-max))))
+        (t
+         (let* ((result (json-read))
+                (type (org-tfl-get result '$type))
+                (handler (org-tfl-get org-tfl-jp-handlers type)))
+           (funcall handler result resulthandler)))))
 
 (cl-defun org-tfl-jp-retrieve
     (from to &key
-	  (via nil) (nationalSearch nil) (date nil) (time nil) (timeIs "Departing")
-	  (journeyPreference "leasttime") (mode nil) (accessibilityPreference nil)
-	  (fromName nil) (toName nil) (viaName nil) (maxTransferMinutes nil)
-	  (maxWalkingMinutes nil) (walkingSpeed "average") (cyclePreference nil)
-	  (adjustment nil) (bikeProficiency nil) (alternativeCycle nil)
-	  (alternativeWalking nil) (applyHtmlMarkup nil) (useMultiModalCall nil)
-	  (resulthandler 'org-tfl-jp-itinerary-show-in-buffer))
+          (via nil) (nationalSearch nil) (date nil) (time nil) (timeIs "Departing")
+          (journeyPreference "leasttime") (mode nil) (accessibilityPreference nil)
+          (fromName nil) (toName nil) (viaName nil) (maxTransferMinutes nil)
+          (maxWalkingMinutes nil) (walkingSpeed "average") (cyclePreference nil)
+          (adjustment nil) (bikeProficiency nil) (alternativeCycle nil)
+          (alternativeWalking nil) (applyHtmlMarkup nil) (useMultiModalCall nil)
+          (resulthandler 'org-tfl-jp-itinerary-show-in-buffer))
   "Retrieve journey result FROM TO with PARAMS.
 
 FROM and TO are locations and can be names, Stop-IDs or coordinates of the format
@@ -804,35 +817,35 @@ APPLYHTMLMARKUP Flag to determine whether certain text (e.g. walking instruction
 USEMULTIMODALCALL A boolean to indicate whether or not to return 3 public transport journeys, a bus journey, a cycle hire journey, a personal cycle journey and a walking journey.
 RESULTHANDLER is the function to call after retrieving the result."
   (setq org-tfl-jp-arg-from from
-	org-tfl-jp-arg-to to
-	org-tfl-jp-arg-via via
-	org-tfl-jp-arg-fromName from
-	org-tfl-jp-arg-toName to
-	org-tfl-jp-arg-viaName via
-	org-tfl-jp-arg-nationalSearch nationalSearch
-	org-tfl-jp-arg-date date
-	org-tfl-jp-arg-time time
-	org-tfl-jp-arg-timeIs timeIs
-	org-tfl-jp-arg-journeyPreference journeyPreference
-	org-tfl-jp-arg-mode mode
-	org-tfl-jp-arg-accessibilityPreference accessibilityPreference
-	org-tfl-jp-arg-fromName fromName
-	org-tfl-jp-arg-toName toName
-	org-tfl-jp-arg-viaName viaName
-	org-tfl-jp-arg-maxTransferMinutes maxTransferMinutes
-	org-tfl-jp-arg-maxWalkingMinutes maxWalkingMinutes
-	org-tfl-jp-arg-walkingSpeed walkingSpeed
-	org-tfl-jp-arg-cyclePreference cyclePreference
-	org-tfl-jp-arg-adjustment adjustment
-	org-tfl-jp-arg-bikeProficiency bikeProficiency
-	org-tfl-jp-arg-alternativeCycle alternativeCycle
-	org-tfl-jp-arg-alternativeWalking alternativeWalking
-	org-tfl-jp-arg-applyHtmlMarkup applyHtmlMarkup
-	org-tfl-jp-arg-useMultiModalCall useMultiModalCall
+        org-tfl-jp-arg-to to
+        org-tfl-jp-arg-via via
+        org-tfl-jp-arg-fromName from
+        org-tfl-jp-arg-toName to
+        org-tfl-jp-arg-viaName via
+        org-tfl-jp-arg-nationalSearch nationalSearch
+        org-tfl-jp-arg-date date
+        org-tfl-jp-arg-time time
+        org-tfl-jp-arg-timeIs timeIs
+        org-tfl-jp-arg-journeyPreference journeyPreference
+        org-tfl-jp-arg-mode mode
+        org-tfl-jp-arg-accessibilityPreference accessibilityPreference
+        org-tfl-jp-arg-fromName fromName
+        org-tfl-jp-arg-toName toName
+        org-tfl-jp-arg-viaName viaName
+        org-tfl-jp-arg-maxTransferMinutes maxTransferMinutes
+        org-tfl-jp-arg-maxWalkingMinutes maxWalkingMinutes
+        org-tfl-jp-arg-walkingSpeed walkingSpeed
+        org-tfl-jp-arg-cyclePreference cyclePreference
+        org-tfl-jp-arg-adjustment adjustment
+        org-tfl-jp-arg-bikeProficiency bikeProficiency
+        org-tfl-jp-arg-alternativeCycle alternativeCycle
+        org-tfl-jp-arg-alternativeWalking alternativeWalking
+        org-tfl-jp-arg-applyHtmlMarkup applyHtmlMarkup
+        org-tfl-jp-arg-useMultiModalCall useMultiModalCall
 
-	org-tfl-jp-fromdis nil
-	org-tfl-jp-todis nil
-	org-tfl-jp-viadis nil)
+        org-tfl-jp-fromdis nil
+        org-tfl-jp-todis nil
+        org-tfl-jp-viadis nil)
 
   (url-retrieve
    (org-tfl-jp-make-url)
@@ -845,16 +858,16 @@ RESULTHANDLER is the function to call after retrieving the result."
 TIMEIS if t, DATETIME is the departing time."
   (interactive
    (list (read-from-minibuffer "From: " nil nil nil 'org-tfl-from-history)
-	 (read-from-minibuffer "To: " nil nil nil 'org-tfl-to-history)
-	 (read-from-minibuffer "Via: " nil nil nil 'org-tfl-via-history)
-	 (org-read-date t t)
-	 (yes-or-no-p "Time is departure time? No for arrival time:")))
+         (read-from-minibuffer "To: " nil nil nil 'org-tfl-to-history)
+         (read-from-minibuffer "Via: " nil nil nil 'org-tfl-via-history)
+         (org-read-date t t)
+         (yes-or-no-p "Time is departure time? No for arrival time:")))
   (let ((date (format-time-string "%Y%m%d" datetime))
-	(time (format-time-string "%H%M" datetime))
-	(timeis (if timeIs "Departing" "Arriving")))
+        (time (format-time-string "%H%M" datetime))
+        (timeis (if timeIs "Departing" "Arriving")))
     (org-tfl-jp-retrieve from to
-			 :via (if (equal "" via) nil via)
-			 :date date :time time :timeIs timeis)))
+                         :via (if (equal "" via) nil via)
+                         :date date :time time :timeIs timeis)))
 
 (cl-defun org-tfl-jp-retrieve-org (from to &rest keywords &allow-other-keys)
   "Use 'org-tfl-jp-itinerary-insert-org' as handlefunc.
@@ -868,28 +881,28 @@ For the rest see 'org-tfl-jp-retrieve'."
 (defun org-tfl-jp-open-org-link (&optional path)
   "Open a org-tfl link.  PATH is ignored.  Properties of the paragraph are used instead."
   (let* ((element (org-element-at-point))
-	 (FROM (org-element-property :FROM element))
-	 (TO (org-element-property :TO element))
-	 (VIA (org-element-property :VIA element))
-	 (NATIONALSEARCH (org-element-property :NATIONALSEARCH element))
-	 (SCHEDULED (org-get-scheduled-time (point)))
-	 (DATE nil)
-	 (TIME nil)
-	 (TIMEIS (or (org-element-property :TIMEIS element) "Departing"))
-	 (JOURNEYPREFERENCE (or (org-element-property :JOURNEYPREFERENCE element) "leasttime"))
-	 (MODE (org-element-property :MODE element))
-	 (ACCESSIBILITYPREFERENCE (org-element-property :ACCESSIBILITYPREFERENCE element))
-	 (FROMNAME (org-element-property :FROMNAME element))
-	 (TONAME (org-element-property :TONAME element))
-	 (VIANAME (org-element-property :VIANAME element))
-	 (MAXTRANSFERMINUTES (org-element-property :MAXTRANSFERMINUTE element))
-	 (MAXWALKINGMINUTES (org-element-property :MAXWALKINMINUTES element))
-	 (WALKINGSPEED (or (org-element-property :WALKINGSPEED element) "average"))
-	 (CYCLEPREFERENCE (org-element-property :CYCLEPREFERENCE element))
-	 (ADJUSTMENT (org-element-property :ADJUSTMENT element))
-	 (BIKEPROFICIENCY (org-element-property :BIKEPROFICIENCY element))
-	 (ALTERNATIVECYCLE (org-element-property :ALTERNATIVECYCLE element))
-	 (ALTERNATIVEWALKING (org-element-property :ALTERNATIVEWALKING element)))
+         (FROM (org-element-property :FROM element))
+         (TO (org-element-property :TO element))
+         (VIA (org-element-property :VIA element))
+         (NATIONALSEARCH (org-element-property :NATIONALSEARCH element))
+         (SCHEDULED (org-get-scheduled-time (point)))
+         (DATE nil)
+         (TIME nil)
+         (TIMEIS (or (org-element-property :TIMEIS element) "Departing"))
+         (JOURNEYPREFERENCE (or (org-element-property :JOURNEYPREFERENCE element) "leasttime"))
+         (MODE (org-element-property :MODE element))
+         (ACCESSIBILITYPREFERENCE (org-element-property :ACCESSIBILITYPREFERENCE element))
+         (FROMNAME (org-element-property :FROMNAME element))
+         (TONAME (org-element-property :TONAME element))
+         (VIANAME (org-element-property :VIANAME element))
+         (MAXTRANSFERMINUTES (org-element-property :MAXTRANSFERMINUTE element))
+         (MAXWALKINGMINUTES (org-element-property :MAXWALKINMINUTES element))
+         (WALKINGSPEED (or (org-element-property :WALKINGSPEED element) "average"))
+         (CYCLEPREFERENCE (org-element-property :CYCLEPREFERENCE element))
+         (ADJUSTMENT (org-element-property :ADJUSTMENT element))
+         (BIKEPROFICIENCY (org-element-property :BIKEPROFICIENCY element))
+         (ALTERNATIVECYCLE (org-element-property :ALTERNATIVECYCLE element))
+         (ALTERNATIVEWALKING (org-element-property :ALTERNATIVEWALKING element)))
     (when SCHEDULED
       (setq DATE (format-time-string "%Y%m%d" SCHEDULED))
       (setq TIME (format-time-string "%H%M" SCHEDULED)))
@@ -912,10 +925,10 @@ The leave of the subheading is the journey result.
 TIMEIS if t, DATETIME is the departing time."
   (interactive
    (list (read-from-minibuffer "From: " nil nil nil 'org-tfl-from-history)
-	 (read-from-minibuffer "To: " nil nil nil 'org-tfl-to-history)
-	 (read-from-minibuffer "Via: " nil nil nil 'org-tfl-via-history)
-	 (org-read-date t t)
-	 (yes-or-no-p "Time is departure time? No for arrival time:")))
+         (read-from-minibuffer "To: " nil nil nil 'org-tfl-to-history)
+         (read-from-minibuffer "Via: " nil nil nil 'org-tfl-via-history)
+         (org-read-date t t)
+         (yes-or-no-p "Time is departure time? No for arrival time:")))
   (let ((timeis (if timeIs "Departing" "Arriving")))
     (org-insert-subheading nil)
     (org-promote)
@@ -926,7 +939,7 @@ TIMEIS if t, DATETIME is the departing time."
       (org-set-property "VIA" via))
     (org-schedule nil (format-time-string (cdr org-time-stamp-formats) datetime))
     (if timeIs
-	(org-set-property "TIMEIS" "Departing")
+        (org-set-property "TIMEIS" "Departing")
       (org-set-property "TIMEIS" "Arriving"))
     (org-tfl-jp-open-org-link)))
 
@@ -937,17 +950,17 @@ TIMEIS if t, DATETIME is the departing time."
 ;; Curiously it did work at first but after an update to
 ;; the most recent versions of all packages, it doesn't (or did from time to time).
 (defun url-http-parse-headers ()
- "Parse and handle HTTP specific headers.
+  "Parse and handle HTTP specific headers.
 Return t if and only if the current buffer is still active and
 should be shown to the user."
   ;; The comments after each status code handled are taken from RFC
   ;; 2616 (HTTP/1.1)
   (url-http-mark-connection-as-free (url-host url-current-object)
-				    (url-port url-current-object)
-				    url-http-process)
+                                    (url-port url-current-object)
+                                    url-http-process)
 
   (if (or (not (boundp 'url-http-end-of-headers))
-	  (not url-http-end-of-headers))
+          (not url-http-end-of-headers))
       (error "Trying to parse headers in odd buffer: %s" (buffer-name)))
   (goto-char (point-min))
   (url-http-debug "url-http-parse-headers called in (%s)" (buffer-name))
@@ -962,19 +975,19 @@ should be shown to the user."
     (cond
      ((string= url-http-response-version "1.0")
       (unless (and connection
-		   (string= (downcase connection) "keep-alive"))
-	(delete-process url-http-process)))
+                   (string= (downcase connection) "keep-alive"))
+        (delete-process url-http-process)))
      (t
       (when (and connection
-		 (string= (downcase connection) "close"))
-	(delete-process url-http-process)))))
+                 (string= (downcase connection) "close"))
+        (delete-process url-http-process)))))
   (let* ((buffer (current-buffer))
-	 (class (/ url-http-response-status 100))
-	 (success nil)
-	 ;; other status symbols: jewelry and luxury cars
-	 (status-symbol (cadr (assq url-http-response-status url-http-codes))))
+         (class (/ url-http-response-status 100))
+         (success nil)
+         ;; other status symbols: jewelry and luxury cars
+         (status-symbol (cadr (assq url-http-response-status url-http-codes))))
     (url-http-debug "Parsed HTTP headers: class=%d status=%d"
-		    class url-http-response-status)
+                    class url-http-response-status)
     (when (url-use-cookies url-http-target-url)
       (url-http-handle-cookies))
 
@@ -992,7 +1005,7 @@ should be shown to the user."
        ;; 102 = Processing (Added by DAV)
        (url-mark-buffer-as-dead buffer)
        (error "HTTP responses in class 1xx not supported (%d)"
-	      url-http-response-status))
+              url-http-response-status))
       (2				; Success
        ;; 200 Ok
        ;; 201 Created
@@ -1003,15 +1016,15 @@ should be shown to the user."
        ;; 206 Partial content
        ;; 207 Multi-status (Added by DAV)
        (pcase status-symbol
-	 ((or `no-content `reset-content)
-	  ;; No new data, just stay at the same document
-	  (url-mark-buffer-as-dead buffer))
-	 (_
-	  ;; Generic success for all others.  Store in the cache, and
-	  ;; mark it as successful.
-	  (widen)
-	  (if (and url-automatic-caching (equal url-http-method "GET"))
-	      (url-store-in-cache buffer))))
+         ((or `no-content `reset-content)
+          ;; No new data, just stay at the same document
+          (url-mark-buffer-as-dead buffer))
+         (_
+          ;; Generic success for all others.  Store in the cache, and
+          ;; mark it as successful.
+          (widen)
+          (if (and url-automatic-caching (equal url-http-method "GET"))
+              (url-store-in-cache buffer))))
        (setq success t))
       (3				; Redirection
        ;; 300 Multiple choices
@@ -1022,114 +1035,114 @@ should be shown to the user."
        ;; 305 Use proxy
        ;; 307 Temporary redirect
        (let ((redirect-uri (or (mail-fetch-field "Location")
-			       (mail-fetch-field "URI"))))
-	 (pcase status-symbol
-	   (`multiple-choices	    ; 300
-	    ;; Quoth the spec (section 10.3.1)
-	    ;; -------------------------------
-	    ;; The requested resource corresponds to any one of a set of
-	    ;; representations, each with its own specific location and
-	    ;; agent-driven negotiation information is being provided so
-	    ;; that the user can select a preferred representation and
-	    ;; redirect its request to that location.
-	    ;; [...]
-	    ;; If the server has a preferred choice of representation, it
-	    ;; SHOULD include the specific URI for that representation in
-	    ;; the Location field; user agents MAY use the Location field
-	    ;; value for automatic redirection.
-	    ;; -------------------------------
-	    ;; We do not support agent-driven negotiation, so we just
-	    ;; redirect to the preferred URI if one is provided.
-	    (setq success t))
-	   ((or `moved-permanently `found `temporary-redirect) ; 301 302 307
-	    ;; If the 301|302 status code is received in response to a
-	    ;; request other than GET or HEAD, the user agent MUST NOT
-	    ;; automatically redirect the request unless it can be
-	    ;; confirmed by the user, since this might change the
-	    ;; conditions under which the request was issued.
-	    (unless (member url-http-method '("HEAD" "GET"))
-	      (setq redirect-uri nil)))
-	   (`see-other			; 303
-	    ;; The response to the request can be found under a different
-	    ;; URI and SHOULD be retrieved using a GET method on that
-	    ;; resource.
-	    (setq url-http-method "GET"
-		  url-http-data nil))
-	   (`not-modified		; 304
-	    ;; The 304 response MUST NOT contain a message-body.
-	    (url-http-debug "Extracting document from cache... (%s)"
-			    (url-cache-create-filename (url-view-url t)))
-	    (url-cache-extract (url-cache-create-filename (url-view-url t)))
-	    (setq redirect-uri nil
-		  success t))
-	   (`use-proxy			; 305
-	    ;; The requested resource MUST be accessed through the
-	    ;; proxy given by the Location field.  The Location field
-	    ;; gives the URI of the proxy.  The recipient is expected
-	    ;; to repeat this single request via the proxy.  305
-	    ;; responses MUST only be generated by origin servers.
-	    (error "Redirection thru a proxy server not supported: %s"
-		   redirect-uri))
-	   (_
-	    ;; Treat everything like '300'
-	    nil))
-	 (when redirect-uri
-	   ;; Clean off any whitespace and/or <...> cruft.
-	   (if (string-match "\\([^ \t]+\\)[ \t]" redirect-uri)
-	       (setq redirect-uri (match-string 1 redirect-uri)))
-	   (if (string-match "^<\\(.*\\)>$" redirect-uri)
-	       (setq redirect-uri (match-string 1 redirect-uri)))
+                               (mail-fetch-field "URI"))))
+         (pcase status-symbol
+           (`multiple-choices	    ; 300
+            ;; Quoth the spec (section 10.3.1)
+            ;; -------------------------------
+            ;; The requested resource corresponds to any one of a set of
+            ;; representations, each with its own specific location and
+            ;; agent-driven negotiation information is being provided so
+            ;; that the user can select a preferred representation and
+            ;; redirect its request to that location.
+            ;; [...]
+            ;; If the server has a preferred choice of representation, it
+            ;; SHOULD include the specific URI for that representation in
+            ;; the Location field; user agents MAY use the Location field
+            ;; value for automatic redirection.
+            ;; -------------------------------
+            ;; We do not support agent-driven negotiation, so we just
+            ;; redirect to the preferred URI if one is provided.
+            (setq success t))
+           ((or `moved-permanently `found `temporary-redirect) ; 301 302 307
+            ;; If the 301|302 status code is received in response to a
+            ;; request other than GET or HEAD, the user agent MUST NOT
+            ;; automatically redirect the request unless it can be
+            ;; confirmed by the user, since this might change the
+            ;; conditions under which the request was issued.
+            (unless (member url-http-method '("HEAD" "GET"))
+              (setq redirect-uri nil)))
+           (`see-other			; 303
+            ;; The response to the request can be found under a different
+            ;; URI and SHOULD be retrieved using a GET method on that
+            ;; resource.
+            (setq url-http-method "GET"
+                  url-http-data nil))
+           (`not-modified		; 304
+            ;; The 304 response MUST NOT contain a message-body.
+            (url-http-debug "Extracting document from cache... (%s)"
+                            (url-cache-create-filename (url-view-url t)))
+            (url-cache-extract (url-cache-create-filename (url-view-url t)))
+            (setq redirect-uri nil
+                  success t))
+           (`use-proxy			; 305
+            ;; The requested resource MUST be accessed through the
+            ;; proxy given by the Location field.  The Location field
+            ;; gives the URI of the proxy.  The recipient is expected
+            ;; to repeat this single request via the proxy.  305
+            ;; responses MUST only be generated by origin servers.
+            (error "Redirection thru a proxy server not supported: %s"
+                   redirect-uri))
+           (_
+            ;; Treat everything like '300'
+            nil))
+         (when redirect-uri
+           ;; Clean off any whitespace and/or <...> cruft.
+           (if (string-match "\\([^ \t]+\\)[ \t]" redirect-uri)
+               (setq redirect-uri (match-string 1 redirect-uri)))
+           (if (string-match "^<\\(.*\\)>$" redirect-uri)
+               (setq redirect-uri (match-string 1 redirect-uri)))
 
-	   ;; Some stupid sites (like sourceforge) send a
-	   ;; non-fully-qualified URL (ie: /), which royally confuses
-	   ;; the URL library.
-	   (if (not (string-match url-nonrelative-link redirect-uri))
-	       ;; Be careful to use the real target URL, otherwise we may
-	       ;; compute the redirection relative to the URL of the proxy.
-	       (setq redirect-uri
-		     (url-expand-file-name redirect-uri url-http-target-url)))
-	   (let ((url-request-method url-http-method)
-		 (url-request-data url-http-data)
-		 (url-request-extra-headers url-http-extra-headers))
-	     ;; Check existing number of redirects
-	     (if (or (< url-max-redirections 0)
-		     (and (> url-max-redirections 0)
-			  (let ((events (car url-callback-arguments))
-				(old-redirects 0))
-			    (while events
-			      (if (eq (car events) :redirect)
-				  (setq old-redirects (1+ old-redirects)))
-			      (and (setq events (cdr events))
-				   (setq events (cdr events))))
-			    (< old-redirects url-max-redirections))))
-		 ;; url-max-redirections hasn't been reached, so go
-		 ;; ahead and redirect.
-		 (progn
-		   ;; Remember that the request was redirected.
-		   (setf (car url-callback-arguments)
-			 (nconc (list :redirect redirect-uri)
-				(car url-callback-arguments)))
-		   ;; Put in the current buffer a forwarding pointer to the new
-		   ;; destination buffer.
-		   ;; FIXME: This is a hack to fix url-retrieve-synchronously
-		   ;; without changing the API.  Instead url-retrieve should
-		   ;; either simply not return the "destination" buffer, or it
-		   ;; should take an optional `dest-buf' argument.
-		   (set (make-local-variable 'url-redirect-buffer)
-			(url-retrieve-internal
-			 redirect-uri url-callback-function
-			 url-callback-arguments
-			 (url-silent url-current-object)
-			 (not (url-use-cookies url-current-object))))
-		   (url-mark-buffer-as-dead buffer))
-	       ;; We hit url-max-redirections, so issue an error and
-	       ;; stop redirecting.
-	       (url-http-debug "Maximum redirections reached")
-	       (setf (car url-callback-arguments)
-		     (nconc (list :error (list 'error 'http-redirect-limit
-					       redirect-uri))
-			    (car url-callback-arguments)))
-	       (setq success t))))))
+           ;; Some stupid sites (like sourceforge) send a
+           ;; non-fully-qualified URL (ie: /), which royally confuses
+           ;; the URL library.
+           (if (not (string-match url-nonrelative-link redirect-uri))
+               ;; Be careful to use the real target URL, otherwise we may
+               ;; compute the redirection relative to the URL of the proxy.
+               (setq redirect-uri
+                     (url-expand-file-name redirect-uri url-http-target-url)))
+           (let ((url-request-method url-http-method)
+                 (url-request-data url-http-data)
+                 (url-request-extra-headers url-http-extra-headers))
+             ;; Check existing number of redirects
+             (if (or (< url-max-redirections 0)
+                     (and (> url-max-redirections 0)
+                          (let ((events (car url-callback-arguments))
+                                (old-redirects 0))
+                            (while events
+                              (if (eq (car events) :redirect)
+                                  (setq old-redirects (1+ old-redirects)))
+                              (and (setq events (cdr events))
+                                   (setq events (cdr events))))
+                            (< old-redirects url-max-redirections))))
+                 ;; url-max-redirections hasn't been reached, so go
+                 ;; ahead and redirect.
+                 (progn
+                   ;; Remember that the request was redirected.
+                   (setf (car url-callback-arguments)
+                         (nconc (list :redirect redirect-uri)
+                                (car url-callback-arguments)))
+                   ;; Put in the current buffer a forwarding pointer to the new
+                   ;; destination buffer.
+                   ;; FIXME: This is a hack to fix url-retrieve-synchronously
+                   ;; without changing the API.  Instead url-retrieve should
+                   ;; either simply not return the "destination" buffer, or it
+                   ;; should take an optional `dest-buf' argument.
+                   (set (make-local-variable 'url-redirect-buffer)
+                        (url-retrieve-internal
+                         redirect-uri url-callback-function
+                         url-callback-arguments
+                         (url-silent url-current-object)
+                         (not (url-use-cookies url-current-object))))
+                   (url-mark-buffer-as-dead buffer))
+               ;; We hit url-max-redirections, so issue an error and
+               ;; stop redirecting.
+               (url-http-debug "Maximum redirections reached")
+               (setf (car url-callback-arguments)
+                     (nconc (list :error (list 'error 'http-redirect-limit
+                                               redirect-uri))
+                            (car url-callback-arguments)))
+               (setq success t))))))
       (4				; Client error
        ;; 400 Bad Request
        ;; 401 Unauthorized
@@ -1153,112 +1166,112 @@ should be shown to the user."
        ;; 423 Locked
        ;; 424 Failed Dependency
        (setq success
-	     (pcase status-symbol
-	       (`unauthorized			; 401
-		;; The request requires user authentication.  The response
-		;; MUST include a WWW-Authenticate header field containing a
-		;; challenge applicable to the requested resource.  The
-		;; client MAY repeat the request with a suitable
-		;; Authorization header field.
-		(url-http-handle-authentication nil))
-	       (`payment-required              ; 402
-		;; This code is reserved for future use
-		(url-mark-buffer-as-dead buffer)
-		(error "Somebody wants you to give them money"))
-	       (`forbidden			; 403
-		;; The server understood the request, but is refusing to
-		;; fulfill it.  Authorization will not help and the request
-		;; SHOULD NOT be repeated.
-		t)
-	       (`not-found			; 404
-		;; Not found
-		t)
-	       (`method-not-allowed		; 405
-		;; The method specified in the Request-Line is not allowed
-		;; for the resource identified by the Request-URI.  The
-		;; response MUST include an Allow header containing a list of
-		;; valid methods for the requested resource.
-		t)
-	       (`not-acceptable		; 406
-		;; The resource identified by the request is only capable of
-		;; generating response entities which have content
-		;; characteristics not acceptable according to the accept
-		;; headers sent in the request.
-		t)
-	       (`proxy-authentication-required ; 407
-		;; This code is similar to 401 (Unauthorized), but indicates
-		;; that the client must first authenticate itself with the
-		;; proxy.  The proxy MUST return a Proxy-Authenticate header
-		;; field containing a challenge applicable to the proxy for
-		;; the requested resource.
-		(url-http-handle-authentication t))
-	       (`request-timeout		; 408
-		;; The client did not produce a request within the time that
-		;; the server was prepared to wait.  The client MAY repeat
-		;; the request without modifications at any later time.
-		t)
-	       (`conflict			; 409
-		;; The request could not be completed due to a conflict with
-		;; the current state of the resource.  This code is only
-		;; allowed in situations where it is expected that the user
-		;; might be able to resolve the conflict and resubmit the
-		;; request.  The response body SHOULD include enough
-		;; information for the user to recognize the source of the
-		;; conflict.
-		t)
-	       (`gone                          ; 410
-		;; The requested resource is no longer available at the
-		;; server and no forwarding address is known.
-		t)
-	       (`length-required		; 411
-		;; The server refuses to accept the request without a defined
-		;; Content-Length.  The client MAY repeat the request if it
-		;; adds a valid Content-Length header field containing the
-		;; length of the message-body in the request message.
-		;;
-		;; NOTE - this will never happen because
-		;; `url-http-create-request' automatically calculates the
-		;; content-length.
-		t)
-	       (`precondition-failed		; 412
-		;; The precondition given in one or more of the
-		;; request-header fields evaluated to false when it was
-		;; tested on the server.
-		t)
-	       ((or `request-entity-too-large `request-uri-too-large) ; 413 414
-		;; The server is refusing to process a request because the
-		;; request entity|URI is larger than the server is willing or
-		;; able to process.
-		t)
-	       (`unsupported-media-type	; 415
-		;; The server is refusing to service the request because the
-		;; entity of the request is in a format not supported by the
-		;; requested resource for the requested method.
-		t)
-	       (`requested-range-not-satisfiable ; 416
-		;; A server SHOULD return a response with this status code if
-		;; a request included a Range request-header field, and none
-		;; of the range-specifier values in this field overlap the
-		;; current extent of the selected resource, and the request
-		;; did not include an If-Range request-header field.
-		t)
-	       (`expectation-failed		; 417
-		;; The expectation given in an Expect request-header field
-		;; could not be met by this server, or, if the server is a
-		;; proxy, the server has unambiguous evidence that the
-		;; request could not be met by the next-hop server.
-		t)
-	       (_
-		;; The request could not be understood by the server due to
-		;; malformed syntax.  The client SHOULD NOT repeat the
-		;; request without modifications.
-		t)))
+             (pcase status-symbol
+               (`unauthorized			; 401
+                ;; The request requires user authentication.  The response
+                ;; MUST include a WWW-Authenticate header field containing a
+                ;; challenge applicable to the requested resource.  The
+                ;; client MAY repeat the request with a suitable
+                ;; Authorization header field.
+                (url-http-handle-authentication nil))
+               (`payment-required              ; 402
+                ;; This code is reserved for future use
+                (url-mark-buffer-as-dead buffer)
+                (error "Somebody wants you to give them money"))
+               (`forbidden			; 403
+                ;; The server understood the request, but is refusing to
+                ;; fulfill it.  Authorization will not help and the request
+                ;; SHOULD NOT be repeated.
+                t)
+               (`not-found			; 404
+                ;; Not found
+                t)
+               (`method-not-allowed		; 405
+                ;; The method specified in the Request-Line is not allowed
+                ;; for the resource identified by the Request-URI.  The
+                ;; response MUST include an Allow header containing a list of
+                ;; valid methods for the requested resource.
+                t)
+               (`not-acceptable		; 406
+                ;; The resource identified by the request is only capable of
+                ;; generating response entities which have content
+                ;; characteristics not acceptable according to the accept
+                ;; headers sent in the request.
+                t)
+               (`proxy-authentication-required ; 407
+                ;; This code is similar to 401 (Unauthorized), but indicates
+                ;; that the client must first authenticate itself with the
+                ;; proxy.  The proxy MUST return a Proxy-Authenticate header
+                ;; field containing a challenge applicable to the proxy for
+                ;; the requested resource.
+                (url-http-handle-authentication t))
+               (`request-timeout		; 408
+                ;; The client did not produce a request within the time that
+                ;; the server was prepared to wait.  The client MAY repeat
+                ;; the request without modifications at any later time.
+                t)
+               (`conflict			; 409
+                ;; The request could not be completed due to a conflict with
+                ;; the current state of the resource.  This code is only
+                ;; allowed in situations where it is expected that the user
+                ;; might be able to resolve the conflict and resubmit the
+                ;; request.  The response body SHOULD include enough
+                ;; information for the user to recognize the source of the
+                ;; conflict.
+                t)
+               (`gone                          ; 410
+                ;; The requested resource is no longer available at the
+                ;; server and no forwarding address is known.
+                t)
+               (`length-required		; 411
+                ;; The server refuses to accept the request without a defined
+                ;; Content-Length.  The client MAY repeat the request if it
+                ;; adds a valid Content-Length header field containing the
+                ;; length of the message-body in the request message.
+                ;;
+                ;; NOTE - this will never happen because
+                ;; `url-http-create-request' automatically calculates the
+                ;; content-length.
+                t)
+               (`precondition-failed		; 412
+                ;; The precondition given in one or more of the
+                ;; request-header fields evaluated to false when it was
+                ;; tested on the server.
+                t)
+               ((or `request-entity-too-large `request-uri-too-large) ; 413 414
+                ;; The server is refusing to process a request because the
+                ;; request entity|URI is larger than the server is willing or
+                ;; able to process.
+                t)
+               (`unsupported-media-type	; 415
+                ;; The server is refusing to service the request because the
+                ;; entity of the request is in a format not supported by the
+                ;; requested resource for the requested method.
+                t)
+               (`requested-range-not-satisfiable ; 416
+                ;; A server SHOULD return a response with this status code if
+                ;; a request included a Range request-header field, and none
+                ;; of the range-specifier values in this field overlap the
+                ;; current extent of the selected resource, and the request
+                ;; did not include an If-Range request-header field.
+                t)
+               (`expectation-failed		; 417
+                ;; The expectation given in an Expect request-header field
+                ;; could not be met by this server, or, if the server is a
+                ;; proxy, the server has unambiguous evidence that the
+                ;; request could not be met by the next-hop server.
+                t)
+               (_
+                ;; The request could not be understood by the server due to
+                ;; malformed syntax.  The client SHOULD NOT repeat the
+                ;; request without modifications.
+                t)))
        ;; Tell the callback that an error occurred, and what the
        ;; status code was.
        (when success
-	 (setf (car url-callback-arguments)
-	       (nconc (list :error (list 'error 'http url-http-response-status))
-		      (car url-callback-arguments)))))
+         (setf (car url-callback-arguments)
+               (nconc (list :error (list 'error 'http url-http-response-status))
+                      (car url-callback-arguments)))))
       (5
        ;; 500 Internal server error
        ;; 501 Not implemented
@@ -1269,56 +1282,56 @@ should be shown to the user."
        ;; 507 Insufficient storage
        (setq success t)
        (pcase url-http-response-status
-	 (`not-implemented		; 501
-	  ;; The server does not support the functionality required to
-	  ;; fulfill the request.
-	  nil)
-	 (`bad-gateway			; 502
-	  ;; The server, while acting as a gateway or proxy, received
-	  ;; an invalid response from the upstream server it accessed
-	  ;; in attempting to fulfill the request.
-	  nil)
-	 (`service-unavailable		; 503
-	  ;; The server is currently unable to handle the request due
-	  ;; to a temporary overloading or maintenance of the server.
-	  ;; The implication is that this is a temporary condition
-	  ;; which will be alleviated after some delay.  If known, the
-	  ;; length of the delay MAY be indicated in a Retry-After
-	  ;; header.  If no Retry-After is given, the client SHOULD
-	  ;; handle the response as it would for a 500 response.
-	  nil)
-	 (`gateway-timeout		; 504
-	  ;; The server, while acting as a gateway or proxy, did not
-	  ;; receive a timely response from the upstream server
-	  ;; specified by the URI (e.g. HTTP, FTP, LDAP) or some other
-	  ;; auxiliary server (e.g. DNS) it needed to access in
-	  ;; attempting to complete the request.
-	  nil)
-	 (`http-version-not-supported	; 505
-	  ;; The server does not support, or refuses to support, the
-	  ;; HTTP protocol version that was used in the request
-	  ;; message.
-	  nil)
-	 (`insufficient-storage		; 507 (DAV)
-	  ;; The method could not be performed on the resource
-	  ;; because the server is unable to store the representation
-	  ;; needed to successfully complete the request.  This
-	  ;; condition is considered to be temporary.  If the request
-	  ;; which received this status code was the result of a user
-	  ;; action, the request MUST NOT be repeated until it is
-	  ;; requested by a separate user action.
-	  nil))
+         (`not-implemented		; 501
+          ;; The server does not support the functionality required to
+          ;; fulfill the request.
+          nil)
+         (`bad-gateway			; 502
+          ;; The server, while acting as a gateway or proxy, received
+          ;; an invalid response from the upstream server it accessed
+          ;; in attempting to fulfill the request.
+          nil)
+         (`service-unavailable		; 503
+          ;; The server is currently unable to handle the request due
+          ;; to a temporary overloading or maintenance of the server.
+          ;; The implication is that this is a temporary condition
+          ;; which will be alleviated after some delay.  If known, the
+          ;; length of the delay MAY be indicated in a Retry-After
+          ;; header.  If no Retry-After is given, the client SHOULD
+          ;; handle the response as it would for a 500 response.
+          nil)
+         (`gateway-timeout		; 504
+          ;; The server, while acting as a gateway or proxy, did not
+          ;; receive a timely response from the upstream server
+          ;; specified by the URI (e.g. HTTP, FTP, LDAP) or some other
+          ;; auxiliary server (e.g. DNS) it needed to access in
+          ;; attempting to complete the request.
+          nil)
+         (`http-version-not-supported	; 505
+          ;; The server does not support, or refuses to support, the
+          ;; HTTP protocol version that was used in the request
+          ;; message.
+          nil)
+         (`insufficient-storage		; 507 (DAV)
+          ;; The method could not be performed on the resource
+          ;; because the server is unable to store the representation
+          ;; needed to successfully complete the request.  This
+          ;; condition is considered to be temporary.  If the request
+          ;; which received this status code was the result of a user
+          ;; action, the request MUST NOT be repeated until it is
+          ;; requested by a separate user action.
+          nil))
        ;; Tell the callback that an error occurred, and what the
        ;; status code was.
        (when success
-	 (setf (car url-callback-arguments)
-	       (nconc (list :error (list 'error 'http url-http-response-status))
-		      (car url-callback-arguments)))))
+         (setf (car url-callback-arguments)
+               (nconc (list :error (list 'error 'http url-http-response-status))
+                      (car url-callback-arguments)))))
       (_
        (error "Unknown class of HTTP response code: %d (%d)"
-	      class url-http-response-status)))
+              class url-http-response-status)))
     (if (not success)
-	(url-mark-buffer-as-dead buffer)
+        (url-mark-buffer-as-dead buffer)
       (url-handle-content-transfer-encoding))
     (url-http-debug "Finished parsing HTTP headers: %S" success)
     (widen)
