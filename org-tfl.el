@@ -852,6 +852,7 @@ RESULTHANDLER is the function to call after retrieving the result."
    `(lambda (status &rest args)
       (apply 'org-tfl-jp-handle ',resulthandler status args))))
 
+;;;###autoload
 (defun org-tfl-jp (from to via datetime timeIs)
   "Plan journey FROM TO VIA at DATETIME.
 
@@ -917,6 +918,7 @@ For the rest see 'org-tfl-jp-retrieve'."
 
 (org-add-link-type "org-tfl" 'org-tfl-jp-open-org-link)
 
+;;;###autoload
 (defun org-tfl-jp-org (from to via datetime timeIs)
   "Plan journey FROM TO VIA at DATETIME.
 
