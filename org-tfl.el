@@ -395,7 +395,7 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
     (substring
      (cl-loop for start from 0 to (length wplist) by 27 concat
 	      (format
-	       "[[http://maps.google.com/maps/api/staticmap?size=%sx%s&maptype=%s&path=color:%s|weight:%s|%s&markers=label:S|color:%s|%s&markers=label:E|color:%s|%s][Map%s]] "
+	       "[[org-tfl-map:http://maps.google.com/maps/api/staticmap?size=%sx%s&maptype=%s&path=color:%s|weight:%s|%s&markers=label:S|color:%s|%s&markers=label:E|color:%s|%s][Map%s]]\n"
 	       org-tfl-map-width
 	       org-tfl-map-height
 	       org-tfl-map-type
@@ -410,6 +410,19 @@ If the date is another day, 'org-tfl-datetime-format-string' is used."
 	       (elt wplist (min (+ start 25) (- (length wplist) 1)))
 	       (+ (/ start 27) 1)))
      0 -1)))
+
+(defun org-tfl-open-map-link (path)
+  "Show the map in the buffer."
+  (let* ((link (save-match-data (org-element-context)))
+         (start (org-element-property :begin link))
+         (end (org-element-property :end link))
+         (name (concat temporary-file-directory (make-temp-name "orgtflmap") ".png")))
+    (url-copy-file path name)
+    (delete-region start end)
+    (insert (format "[[file:%s]]" name))
+    (org-display-inline-images nil t start (+ end 9))))
+
+(org-add-link-type "org-tfl-map" 'org-tfl-open-map-link)
 
 (defun org-tfl-jp-format-steps (leg)
   "Return a formatted string with a list of steps for the given LEG.
