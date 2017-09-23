@@ -12,10 +12,6 @@ Installation
 org-tfl is available on `MELPA <https://melpa.org>`_.
 At the moment svg support is required!
 
-Add the following to your emacs init file::
-
-  (require 'org-tfl)
-
 Screencast
 ----------
 
@@ -128,3 +124,9 @@ History
 +++++++++++++++++++++++++++++++++++++++
 
 * Fix map url (Thank you Colin!)
+
+0.4.0 (2017-09-23)
+++++++++++++++++++++++++++++++++++++++++
+
+* Display maps inline instead of opening them in the browser.
+* Autoload ``org-tfl-jp`` and ``org-tfl-jp-org``.

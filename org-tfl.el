@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;; Version: 0.3.4
+;; Version: 0.4.0
 ;; Author: storax (David Zuber), <zuber [dot] david [at] gmx [dot] de>
 ;; URL: https://github.com/storax/org-tfl
 ;; Package-Requires: ((org "0.16.2") (cl-lib "0.5") (emacs "24.1"))
@@ -852,6 +852,7 @@ RESULTHANDLER is the function to call after retrieving the result."
    `(lambda (status &rest args)
       (apply 'org-tfl-jp-handle ',resulthandler status args))))
 
+;;;###autoload
 (defun org-tfl-jp (from to via datetime timeIs)
   "Plan journey FROM TO VIA at DATETIME.
 
@@ -917,6 +918,7 @@ For the rest see 'org-tfl-jp-retrieve'."
 
 (org-add-link-type "org-tfl" 'org-tfl-jp-open-org-link)
 
+;;;###autoload
 (defun org-tfl-jp-org (from to via datetime timeIs)
   "Plan journey FROM TO VIA at DATETIME.
 
